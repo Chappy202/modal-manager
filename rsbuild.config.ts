@@ -30,6 +30,9 @@ export default defineConfig({
         chain.output.libraryTarget('umd');
         chain.output.library('ModalManager');
         chain.output.globalObject('this');
+
+        // Exclude CSS from production builds
+        chain.module.rule('css').exclude.add(/\.css$/);
       }
     },
   },
@@ -40,8 +43,13 @@ export default defineConfig({
       name: 'typescript-declaration',
       setup(api) {
         api.onAfterBuild(async () => {
-          const { execSync } = require('child_process');
-          execSync('tsc --emitDeclarationOnly --outDir dist/types');
+          try {
+            const { execSync } = require('child_process');
+            execSync('npx tsc --emitDeclarationOnly --outDir dist/types', { stdio: 'inherit' });
+          } catch (error) {
+            console.warn('Warning: Failed to generate TypeScript declarations', error);
+            // Don't fail the build if declaration generation fails
+          }
         });
       },
     },

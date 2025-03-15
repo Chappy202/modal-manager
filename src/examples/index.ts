@@ -1,1 +1,4 @@
-export { SimpleMultiStepModal } from './SimpleModal'; 
+/**
+ * Example implementations of the modal manager
+ */
+export { SimpleMultiStepModal } from './SimpleModal';
