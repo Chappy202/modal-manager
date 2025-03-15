@@ -1,17 +1,36 @@
 # Stepped Modal
 
-A lightweight, framework-agnostic library for managing stepped modals in React applications.
+A lightweight, flexible library for managing multi-step modals in React applications.
+
+## Table of Contents
+
+- [Features](#features)
+- [Installation](#installation)
+- [Basic Usage](#basic-usage)
+- [Advanced Usage](#advanced-usage)
+  - [Conditional Steps and Branching Flows](#conditional-steps-and-branching-flows)
+  - [Smart Navigation History](#smart-navigation-history)
+  - [Using with Different UI Libraries](#using-with-different-ui-libraries)
+    - [Material UI](#material-ui)
+    - [Shadcn/UI](#shadcnui)
+- [Debugging](#debugging)
+- [API Reference](#api-reference)
+  - [useModal](#usemodal)
+  - [ModalContent](#modalcontent)
+  - [StepRenderer and Step](#steprenderer-and-step)
+  - [ModalDebugger](#modaldebugger)
+- [License](#license)
 
 ## Features
 
 - 🔄 Multi-step flows within a single modal
-- 🔀 Conditional steps based on user input
-- 🚪 Easy navigation between steps
-- 🎯 Jump to specific steps
-- 🧩 Framework-agnostic (works with any UI library)
+- 🔀 Conditional steps and branching flows
+- 🚪 Intuitive navigation between steps (forward, backward, and direct jumps)
+- 🧠 Smart step history tracking for complex flows
 - 🔍 Built-in debugger for development
-- 📦 Small bundle size
-- 📝 TypeScript support
+- 📦 Small bundle size with minimal dependencies
+- 📝 Full TypeScript support
+- 🧩 Framework-agnostic (works with any UI library)
 
 ## Installation
 
@@ -83,14 +102,16 @@ function MyModal() {
 
 ## Advanced Usage
 
-### Conditional Steps
+### Conditional Steps and Branching Flows
+
+You can create complex flows where the next step depends on user input:
 
 ```tsx
 import { useModal, ModalContent, Step, StepRenderer } from 'modal-manager';
 import { Dialog } from 'your-ui-library';
 
 function PaymentModal() {
-  const { isOpen, open, close, goTo, setData, data } = useModal({
+  const { isOpen, open, close, goTo, setData, data, addStep } = useModal({
     id: 'payment-modal',
     steps: [
       { id: 'method' },
@@ -99,6 +120,14 @@ function PaymentModal() {
       { id: 'confirm' },
     ]
   });
+
+  // Set up the step navigation relationships
+  useEffect(() => {
+    // Define the previous step for each conditional step
+    addStep('payment-modal', 'card-details', {}, 'method');
+    addStep('payment-modal', 'bank-details', {}, 'method');
+    addStep('payment-modal', 'confirm', {}, data.paymentMethod === 'card' ? 'card-details' : 'bank-details');
+  }, [addStep, data.paymentMethod]);
 
   const handlePaymentMethodSelect = (method) => {
     setData({ paymentMethod: method });
@@ -117,35 +146,35 @@ function PaymentModal() {
       
       <Dialog open={isOpen} onClose={close}>
         <ModalContent id="payment-modal">
-          {({ currentStep, next, prev, close }) => (
-            <>
-              <StepRenderer currentStep={currentStep}>
-                <Step id="method">
-                  <h2>Select Payment Method</h2>
-                  <button onClick={() => handlePaymentMethodSelect('card')}>Credit Card</button>
-                  <button onClick={() => handlePaymentMethodSelect('bank')}>Bank Transfer</button>
-                </Step>
-                
-                <Step id="card-details">
-                  <h2>Enter Card Details</h2>
-                  {/* Card form */}
-                  <button onClick={() => next()}>Continue</button>
-                </Step>
-                
-                <Step id="bank-details">
-                  <h2>Enter Bank Details</h2>
-                  {/* Bank form */}
-                  <button onClick={() => next()}>Continue</button>
-                </Step>
-                
-                <Step id="confirm">
-                  <h2>Confirm Payment</h2>
-                  <p>Payment Method: {data.paymentMethod}</p>
-                  <button onClick={prev}>Back</button>
-                  <button onClick={close}>Confirm</button>
-                </Step>
-              </StepRenderer>
-            </>
+          {({ currentStep, prev, close }) => (
+            <StepRenderer currentStep={currentStep}>
+              <Step id="method">
+                <h2>Select Payment Method</h2>
+                <button onClick={() => handlePaymentMethodSelect('card')}>Credit Card</button>
+                <button onClick={() => handlePaymentMethodSelect('bank')}>Bank Transfer</button>
+              </Step>
+              
+              <Step id="card-details">
+                <h2>Enter Card Details</h2>
+                {/* Card form */}
+                <button onClick={() => prev()}>Back</button>
+                <button onClick={() => goTo('confirm')}>Continue</button>
+              </Step>
+              
+              <Step id="bank-details">
+                <h2>Enter Bank Details</h2>
+                {/* Bank form */}
+                <button onClick={() => prev()}>Back</button>
+                <button onClick={() => goTo('confirm')}>Continue</button>
+              </Step>
+              
+              <Step id="confirm">
+                <h2>Confirm Payment</h2>
+                <p>Payment Method: {data.paymentMethod}</p>
+                <button onClick={() => prev()}>Back</button>
+                <button onClick={close}>Confirm</button>
+              </Step>
+            </StepRenderer>
           )}
         </ModalContent>
       </Dialog>
@@ -153,6 +182,18 @@ function PaymentModal() {
   );
 }
 ```
+
+### Smart Navigation History
+
+The library automatically tracks navigation history, making it easy to implement "Back" buttons that work intuitively even in complex flows:
+
+- When a user navigates forward, the current step is added to history
+- When a user navigates backward, the library uses:
+  1. The explicit `previousStep` if defined for the current step
+  2. The navigation history if available
+  3. Simple index decrement as a fallback
+
+This ensures users always return to the step they came from, even in non-linear flows.
 
 ### Using with Different UI Libraries
 
@@ -283,21 +324,12 @@ function App() {
 }
 ```
 
-## Development
-
-To run the examples locally:
-
-```bash
-# Clone the repository
-git clone https://github.com/Chappy202/modal-manager.git
-cd modal-manager
-
-# Install dependencies
-pnpm install
-
-# Start the development server
-pnpm dev
-```
+The debugger shows:
+- All active modals
+- Current step for each modal
+- Step history
+- Modal data
+- Navigation history
 
 ## API Reference
 
@@ -312,13 +344,16 @@ const {
   prev,        // () => void - Goes to the previous step
   goTo,        // (stepId, data?) => void - Goes to a specific step with optional data
   setData,     // (data) => void - Updates the modal data
+  addStep,     // (modalId, stepId, data?, previousStep?) => void - Adds or updates a step
   
   // State
-  isOpen,      // boolean - Whether the modal is open
-  currentStep, // string | null - ID of the current step
-  data,        // Record<string, unknown> - Current modal data
-  isFirst,     // boolean - Whether the current step is the first step
-  isLast,      // boolean - Whether the current step is the last step
+  isOpen,          // boolean - Whether the modal is open
+  currentStep,     // string | null - ID of the current step
+  currentStepIndex,// number - Index of the current step
+  totalSteps,      // number - Total number of steps
+  data,            // Record<string, unknown> - Current modal data
+  isFirst,         // boolean - Whether the current step is the first step
+  isLast,          // boolean - Whether the current step is the last step
 } = useModal({
   id,           // string - Unique identifier for the modal
   initialData,  // object - Initial data for the modal (optional)
