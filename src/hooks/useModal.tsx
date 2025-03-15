@@ -1,6 +1,6 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import useModalStore from '../core/store';
-import type { ModalOptions, ModalStepProps, ModalFlowProps } from '../types';
+import type { ModalOptions, ModalStepProps, ModalFlowProps, ConditionalStepProps } from '../types';
 
 /**
  * Custom hook for interacting with a specific modal
@@ -8,11 +8,26 @@ import type { ModalOptions, ModalStepProps, ModalFlowProps } from '../types';
 export function useModal(modalId: string, options?: ModalOptions) {
   const store = useModalStore();
 
-  // Register modal on mount
+  // Register modal on mount and clean up on unmount
   useEffect(() => {
     store.openModal(modalId, options?.initialData);
+
+    // Clean up the modal when the component unmounts
+    return () => {
+      // Only close if no callbacks are provided (to avoid double-closing)
+      if (!options?.onCancel && !options?.onComplete) {
+        store.closeModal(modalId);
+      }
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [modalId]);
+
+  // Helper to determine if a step should be shown based on a condition
+  const shouldShowStep = useCallback((stepId: string, condition?: (data: Record<string, any>) => boolean) => {
+    if (!condition) return true;
+    const data = store.getModalData(modalId);
+    return condition(data);
+  }, [modalId, store]);
 
   return {
     // State
@@ -29,6 +44,7 @@ export function useModal(modalId: string, options?: ModalOptions) {
     nextStep: (data?: Record<string, any>) => store.nextStep(modalId, data),
     prevStep: () => store.prevStep(modalId),
     updateData: (data: Record<string, any>) => store.updateData(modalId, data),
+    shouldShowStep,
 
     // Modal lifecycle
     close: () => {
@@ -64,10 +80,46 @@ export function ModalStep({ modalId, stepId, children }: ModalStepProps) {
 }
 
 /**
+ * Component for rendering a conditional step in a modal flow
+ * Only registers and renders if the condition is met
+ */
+export function ConditionalStep({
+  modalId,
+  stepId,
+  condition,
+  children
+}: ConditionalStepProps) {
+  const modal = useModal(modalId);
+  const shouldShow = modal.shouldShowStep(stepId, condition);
+
+  // Only register this step with the modal if the condition is met
+  useEffect(() => {
+    if (shouldShow) {
+      modal.addStep(stepId);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stepId, shouldShow]);
+
+  // Only render if this is the current step and condition is met
+  if (modal.currentStep !== stepId || !shouldShow) {
+    return null;
+  }
+
+  return <>{children}</>;
+}
+
+/**
  * Component for connecting a modal UI to the modal state manager
  */
 export function ModalFlow({ id, open, onOpenChange, children, options }: ModalFlowProps) {
   const store = useModalStore();
+
+  // Register the modal with the store
+  useEffect(() => {
+    if (open) {
+      store.openModal(id, options?.initialData);
+    }
+  }, [id, open, options?.initialData, store]);
 
   // Handle modal closing from the store
   useEffect(() => {

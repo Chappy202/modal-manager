@@ -620,6 +620,7 @@ export const AdvancedModal = () => {
     setOpen(false);
   };
 
+  // Pass callbacks directly to the hook
   const modal = useModal('advanced-modal', {
     onComplete: handleComplete,
     onCancel: handleCancel
@@ -665,10 +666,7 @@ export const AdvancedModal = () => {
           id="advanced-modal"
           open={open}
           onOpenChange={setOpen}
-          options={{
-            onComplete: handleComplete,
-            onCancel: handleCancel,
-          }}
+          // No need to pass callbacks again, they're already in the hook
         >
           <AdvancedModalDialog
             title="Subscription Wizard"

@@ -7,7 +7,7 @@
 export { default as useModalStore } from './core/store';
 
 // Hook exports
-export { useModal, ModalStep, ModalFlow } from './hooks/useModal';
+export { useModal, ModalStep, ModalFlow, ConditionalStep } from './hooks/useModal';
 
 // Component exports
 export { ModalDebugger } from './components/ModalDebugger';
@@ -20,4 +20,5 @@ export type {
   ModalFlowProps,
   ModalStepProps,
   ModalDebuggerProps,
+  ConditionalStepProps,
 } from './types';

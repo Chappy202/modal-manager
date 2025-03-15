@@ -2,11 +2,30 @@
 
 A flexible, state management library for multi-step dialogs and modals in React applications. Works with any UI library including ShadCN, Material UI, or your custom modal components.
 
+## Table of Contents
+
+- [Features](#features)
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [Using with UI Libraries](#using-with-ui-libraries)
+  - [ShadCN UI](#shadcn-ui)
+  - [Mantine](#mantine)
+- [Managing Modal State](#managing-modal-state)
+- [API Reference](#api-reference)
+  - [useModal Hook](#usemodal-hook)
+  - [Components](#components)
+- [Advanced Usage: Conditional Flows](#advanced-usage-conditional-flows)
+- [Debugging Your Modals](#debugging-your-modals)
+- [Best Practices](#best-practices)
+- [Contributing](#contributing)
+- [License](#license)
+- [Development Setup](#development-setup)
+
 ## Features
 
 - 📚 **Multi-step flows** - Navigate forward, backward, or to any specific step
 - 🔄 **State persistence** - Maintain data between steps and collect it at the end
-- 🧱 **UI-agnostic** - Works with any modal or dialog component
+- 🧱 **UI-agnostic** - Works with any UI library including ShadCN, Material UI, Mantine, and more
 - 🔀 **Conditional flows** - Create dynamic paths based on user choices
 - 📦 **Stack-based modals** - Support for nested/stacked modals
 - 🔍 **Developer tools** - Built-in debugger for development
@@ -24,226 +43,466 @@ yarn add modal-manager
 pnpm add modal-manager
 ```
 
-## Basic Usage
+## Quick Start
 
-Here's a simple example using ShadCN UI components:
+Here's a simple example of a multi-step form:
 
 ```tsx
+import { useState } from 'react';
 import { useModal, ModalStep, ModalFlow } from 'modal-manager';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
 
-function MyMultiStepModal() {
-  const [open, setOpen] = React.useState(false);
+function SimpleForm() {
+  const [open, setOpen] = useState(false);
+  
+  // Initialize modal with callbacks
+  const modal = useModal('simple-form', {
+    onComplete: (data) => {
+      console.log('Form submitted:', data);
+      setOpen(false);
+    },
+    onCancel: () => setOpen(false)
+  });
 
   return (
     <>
-      <Button onClick={() => setOpen(true)}>Open Modal</Button>
-
-      <Dialog open={open} onOpenChange={setOpen}>
-        <ModalFlow
-          id="my-flow"
-          open={open}
-          onOpenChange={setOpen}
-          options={{
-            onComplete: data => console.log('Completed with data:', data),
-            initialData: { defaultValue: 'example' },
-          }}
-        >
-          <DialogContent>
-            {/* Step 1 */}
-            <ModalStep modalId="my-flow" stepId="step-1">
-              <StepOneContent />
+      <button onClick={() => setOpen(true)}>Open Form</button>
+      
+      {open && (
+        <ModalFlow id="simple-form" open={open} onOpenChange={setOpen}>
+          <div className="modal-content">
+            {/* Step 1: Name */}
+            <ModalStep modalId="simple-form" stepId="name">
+              <NameStep />
             </ModalStep>
-
-            {/* Step 2 */}
-            <ModalStep modalId="my-flow" stepId="step-2">
-              <StepTwoContent />
+            
+            {/* Step 2: Email */}
+            <ModalStep modalId="simple-form" stepId="email">
+              <EmailStep />
             </ModalStep>
-
-            {/* Step 3 */}
-            <ModalStep modalId="my-flow" stepId="step-3">
-              <StepThreeContent />
+            
+            {/* Step 3: Confirmation */}
+            <ModalStep modalId="simple-form" stepId="confirm">
+              <ConfirmStep />
             </ModalStep>
-          </DialogContent>
+          </div>
         </ModalFlow>
-      </Dialog>
+      )}
     </>
   );
 }
-```
 
-## Accessing and Managing State
-
-Use the `useModal` hook to access and manage the modal state:
-
-```tsx
-function StepOneContent() {
-  const modal = useModal('my-flow');
-
+// Step components
+function NameStep() {
+  const modal = useModal('simple-form');
+  const [name, setName] = useState(modal.data.name || '');
+  
   return (
-    <>
-      <h2>Step 1</h2>
-      <input
-        type="text"
-        onChange={e => modal.updateStepData('step-1', { value: e.target.value })}
+    <div>
+      <h2>Enter Your Name</h2>
+      <input 
+        value={name}
+        onChange={(e) => setName(e.target.value)}
       />
       <div>
-        <button onClick={() => modal.close()}>Cancel</button>
-        <button onClick={() => modal.nextStep()}>Next</button>
+        <button onClick={modal.cancel}>Cancel</button>
+        <button 
+          onClick={() => {
+            modal.updateData({ name });
+            modal.nextStep();
+          }}
+          disabled={!name}
+        >
+          Next
+        </button>
       </div>
+    </div>
+  );
+}
+
+// Other step components follow the same pattern
+```
+
+This example demonstrates:
+- Setting up a modal with the `useModal` hook
+- Creating a multi-step flow with `ModalFlow` and `ModalStep`
+- Managing state between steps
+- Handling form completion and cancellation
+
+## Using with UI Libraries
+
+The modal manager is UI-agnostic and works with any UI library. Here are examples with popular UI frameworks:
+
+### ShadCN UI
+
+```tsx
+import { useState } from 'react';
+import { useModal, ModalStep, ModalFlow } from 'modal-manager';
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter
+} from "@/components/ui/dialog";
+
+function ShadcnModalExample() {
+  const [open, setOpen] = useState(false);
+  
+  const modal = useModal('shadcn-form', {
+    onComplete: (data) => {
+      console.log('Form submitted:', data);
+      setOpen(false);
+    },
+    onCancel: () => setOpen(false)
+  });
+
+  return (
+    <>
+      <Button onClick={() => setOpen(true)}>Open ShadCN Modal</Button>
+      
+      <ModalFlow id="shadcn-form" open={open} onOpenChange={setOpen}>
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>
+                {modal.currentStepIndex === 0 ? "Personal Information" : 
+                 modal.currentStepIndex === 1 ? "Contact Details" : 
+                 "Confirmation"}
+              </DialogTitle>
+            </DialogHeader>
+            
+            <ModalStep modalId="shadcn-form" stepId="personal">
+              <PersonalInfoStep />
+            </ModalStep>
+            
+            <ModalStep modalId="shadcn-form" stepId="contact">
+              <ContactDetailsStep />
+            </ModalStep>
+            
+            <ModalStep modalId="shadcn-form" stepId="confirm">
+              <ConfirmationStep />
+            </ModalStep>
+          </DialogContent>
+        </Dialog>
+      </ModalFlow>
+    </>
+  );
+}
+
+// Example step component
+function PersonalInfoStep() {
+  const modal = useModal('shadcn-form');
+  const [name, setName] = useState(modal.data.name || '');
+  
+  return (
+    <div className="py-4 space-y-4">
+      <div className="space-y-2">
+        <label htmlFor="name" className="text-sm font-medium">
+          Full Name
+        </label>
+        <input
+          id="name"
+          className="w-full p-2 border rounded-md"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+      </div>
+      
+      <DialogFooter>
+        <Button variant="outline" onClick={modal.cancel}>
+          Cancel
+        </Button>
+        <Button 
+          onClick={() => {
+            modal.updateData({ name });
+            modal.nextStep();
+          }}
+          disabled={!name}
+        >
+          Continue
+        </Button>
+      </DialogFooter>
+    </div>
+  );
+}
+```
+
+### Mantine
+
+```tsx
+import { useState } from 'react';
+import { useModal, ModalStep, ModalFlow } from 'modal-manager';
+import { Modal, Button, TextInput, Group, Stack } from '@mantine/core';
+
+function MantineModalExample() {
+  const [open, setOpen] = useState(false);
+  
+  const modal = useModal('mantine-form', {
+    onComplete: (data) => {
+      console.log('Form submitted:', data);
+      setOpen(false);
+    },
+    onCancel: () => setOpen(false)
+  });
+
+  return (
+    <>
+      <Button onClick={() => setOpen(true)}>Open Mantine Modal</Button>
+      
+      <ModalFlow id="mantine-form" open={open} onOpenChange={setOpen}>
+        <Modal 
+          opened={open} 
+          onClose={() => setOpen(false)}
+          title={modal.currentStepIndex === 0 ? "Step 1: Basic Info" : "Step 2: Review"}
+        >
+          <ModalStep modalId="mantine-form" stepId="info">
+            <MantineInfoStep />
+          </ModalStep>
+          
+          <ModalStep modalId="mantine-form" stepId="review">
+            <MantineReviewStep />
+          </ModalStep>
+        </Modal>
+      </ModalFlow>
     </>
   );
 }
 ```
+
+## Managing Modal State
+
+Each step can access and update the modal's shared state:
+
+```tsx
+function EmailStep() {
+  const modal = useModal('simple-form');
+  const [email, setEmail] = useState(modal.data.email || '');
+  
+  const handleNext = () => {
+    // Update the modal's data store
+    modal.updateData({ email });
+    modal.nextStep();
+  };
+  
+  return (
+    <div>
+      <h2>Enter Your Email</h2>
+      <input 
+        type="email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+      />
+      <div>
+        <button onClick={modal.prevStep}>Back</button>
+        <button 
+          onClick={handleNext}
+          disabled={!email || !email.includes('@')}
+        >
+          Next
+        </button>
+      </div>
+    </div>
+  );
+}
+```
+
+**Key Points:**
+- Each step can read from `modal.data`
+- Use `updateData()` to merge new data with existing data
+- Data persists between steps
+- All data is passed to `onComplete` when the flow finishes
 
 ## API Reference
 
-### useModal(modalId, options?)
-
-A React hook that provides an easy interface to the modal state:
+### useModal Hook
 
 ```tsx
-const modal = useModal('my-modal', {
-  onComplete: data => console.log('All data:', data),
-  onCancel: () => console.log('Modal cancelled'),
-  initialData: { foo: 'bar' },
-});
+const modal = useModal(modalId, options);
 ```
 
-#### State Properties
+**Parameters:**
+- `modalId`: Unique identifier for the modal
+- `options`: Configuration object
+  - `onComplete`: Callback when modal completes
+  - `onCancel`: Callback when modal is cancelled
+  - `initialData`: Initial data for the modal
 
-- `isOpen` - Whether the modal is open
-- `currentStep` - The current step object
-- `currentStepIndex` - The index of the current step
-- `totalSteps` - The total number of steps
-- `isFirstStep` - Whether the current step is the first
-- `isLastStep` - Whether the current step is the last
-
-#### Actions
-
-- `addStep(stepId, data?)` - Register a step
-- `goToStep(stepId, data?)` - Navigate to a step
-- `nextStep(data?)` - Navigate to the next step
-- `prevStep()` - Navigate to the previous step
-- `close()` - Close the modal (triggers onCancel)
-- `complete()` - Complete the modal flow (triggers onComplete)
-
-#### Data Management
-
-- `updateStepData(stepId, data)` - Update data for a step
-- `getStepData(stepId)` - Get data for a step
-- `getAllData()` - Get combined data from all steps
+**Returns:**
+- `data`: Current modal data
+- `updateData(newData)`: Merge new data with existing data
+- `nextStep()`: Move to the next step
+- `prevStep()`: Move to the previous step
+- `goToStep(stepId)`: Navigate to a specific step
+- `complete()`: Complete the modal flow
+- `cancel()`: Cancel the modal flow
+- `currentStepId`: ID of the current step
+- `isFirstStep`: Whether current step is first
+- `isLastStep`: Whether current step is last
 
 ### Components
 
 #### ModalFlow
 
-Connects your UI dialog/modal to the state manager:
-
 ```tsx
-<ModalFlow
-  id="my-flow"
-  open={open}
-  onOpenChange={setOpen}
-  options={{
-    onComplete: data => console.log('Completed with data:', data),
-    onCancel: () => console.log('Modal cancelled'),
-    initialData: { defaultValue: 'example' },
-  }}
->
-  {/* Your modal content */}
+<ModalFlow id="modal-id" open={open} onOpenChange={setOpen}>
+  {/* Modal content and steps */}
 </ModalFlow>
 ```
 
 #### ModalStep
 
-Renders the content for a specific step:
-
 ```tsx
-<ModalStep modalId="my-flow" stepId="step-1">
-  <h2>Step 1 Content</h2>
+<ModalStep modalId="modal-id" stepId="step-id">
+  <StepContent />
 </ModalStep>
 ```
 
-You can also use a render function to access step data:
+#### ConditionalStep
 
 ```tsx
-<ModalStep modalId="my-flow" stepId="step-1">
-  {data => (
-    <div>
-      <h2>Step 1 Content</h2>
-      <p>Current value: {data.value}</p>
-    </div>
-  )}
-</ModalStep>
+<ConditionalStep 
+  modalId="modal-id" 
+  stepId="step-id"
+  condition={(data) => data.someValue === true}
+>
+  <StepContent />
+</ConditionalStep>
 ```
 
 #### ModalDebugger
 
-A debugging component that displays the current state of modals:
-
 ```tsx
-// Add this in your development environment
 <ModalDebugger position="bottom-right" initiallyOpen={false} />
 ```
 
 ## Advanced Usage: Conditional Flows
 
-Create flows that branch based on user input:
+Use the `ConditionalStep` component to create dynamic flows based on user choices:
 
 ```tsx
-function PaymentStep() {
-  const modal = useModal('checkout-flow');
+import { useModal, ModalStep, ConditionalStep, ModalFlow } from 'modal-manager';
 
-  const handlePaymentSelection = method => {
-    modal.updateStepData('payment-method', { method });
-
-    // Navigate to different next steps based on payment method
-    if (method === 'credit-card') {
-      modal.goToStep('credit-card-details');
-    } else if (method === 'paypal') {
-      modal.goToStep('paypal-details');
-    } else {
-      modal.goToStep('confirmation');
-    }
-  };
+function SignupWizard() {
+  const [open, setOpen] = useState(false);
+  const modal = useModal('signup', {
+    onComplete: (data) => {
+      console.log('Signup completed:', data);
+      setOpen(false);
+    },
+    onCancel: () => setOpen(false)
+  });
 
   return (
-    <div>
-      <h2>Select Payment Method</h2>
-      <div>
-        <button onClick={() => handlePaymentSelection('credit-card')}>Credit Card</button>
-        <button onClick={() => handlePaymentSelection('paypal')}>PayPal</button>
-        <button onClick={() => handlePaymentSelection('bank-transfer')}>Bank Transfer</button>
-      </div>
-    </div>
+    <>
+      <button onClick={() => setOpen(true)}>Sign Up</button>
+      
+      {open && (
+        <ModalFlow id="signup" open={open} onOpenChange={setOpen}>
+          <div className="modal-content">
+            {/* Basic information step */}
+            <ModalStep modalId="signup" stepId="basic-info">
+              <BasicInfoStep />
+            </ModalStep>
+            
+            {/* Account type selection */}
+            <ModalStep modalId="signup" stepId="account-type">
+              <AccountTypeStep />
+            </ModalStep>
+            
+            {/* Business details (only shown for business accounts) */}
+            <ConditionalStep 
+              modalId="signup" 
+              stepId="business-details"
+              condition={(data) => data.accountType === 'business'}
+            >
+              <BusinessDetailsStep />
+            </ConditionalStep>
+            
+            {/* Confirmation step */}
+            <ModalStep modalId="signup" stepId="confirmation">
+              <ConfirmationStep />
+            </ModalStep>
+          </div>
+        </ModalFlow>
+      )}
+    </>
   );
 }
 ```
 
+This example demonstrates:
+- Using `ConditionalStep` to show steps only when certain conditions are met
+- Creating a dynamic flow based on user choices
+- Maintaining a clean, declarative structure
+
+## Debugging Your Modals
+
+The library includes a `ModalDebugger` component to help you troubleshoot your modal flows:
+
+```tsx
+import { ModalDebugger } from 'modal-manager';
+
+function App() {
+  return (
+    <>
+      {/* Your application components */}
+      
+      {/* Add this in development mode */}
+      {process.env.NODE_ENV === 'development' && (
+        <ModalDebugger />
+      )}
+    </>
+  );
+}
+```
+
+The debugger provides:
+- Current state of all modals
+- Step navigation history
+- Data stored in each modal
+- Active step information
+
+This tool is automatically hidden in production builds.
+
 ## Best Practices
 
-1. **Step Organization**:
+### 1. Modal Organization
 
-   - Keep step components focused on rendering UI
-   - Move logic into custom hooks when possible
+Keep your modal components organized:
+- Create separate files for each modal step
+- Group related steps in a folder
+- Use descriptive IDs for modals and steps
 
-2. **Data Management**:
+### 2. Data Management
 
-   - Store form data in step data via `updateStepData`
-   - Validate data before moving to the next step
-   - Use `getAllData()` to combine all step data when completing
+Be intentional with modal data:
+- Only store what you need in the modal state
+- Use `updateData` to merge changes (not replace all data)
+- Consider using TypeScript for type safety
 
-3. **Navigation**:
+### 3. Conditional Steps
 
-   - Create helper functions for complex navigation logic
-   - Use `goToStep` for non-linear navigation
-   - Handle edge cases like skipping steps based on conditions
+Use `ConditionalStep` for dynamic flows:
+```tsx
+<ConditionalStep condition={(data) => data.accountType === 'business'}>
+  <BusinessDetailsStep />
+</ConditionalStep>
+```
 
-4. **Error Handling**:
-   - Add validation before navigation
-   - Store error states in step data
-   - Reset errors when steps are revisited
+### 4. Error Handling
+
+Implement proper error handling:
+- Validate data before proceeding to next steps
+- Provide clear error messages to users
+- Use try/catch blocks for async operations
+
+### 5. Performance
+
+For large forms:
+- Split complex steps into smaller ones
+- Avoid storing large objects in modal state
+- Consider lazy-loading step components
 
 ## Contributing
 

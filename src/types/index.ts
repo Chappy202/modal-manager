@@ -75,3 +75,17 @@ export interface ModalDebuggerProps {
   /** Whether the debugger is initially open */
   initiallyOpen?: boolean;
 }
+
+/**
+ * Props for the ConditionalStep component
+ */
+export interface ConditionalStepProps {
+  /** ID of the parent modal */
+  modalId: string;
+  /** Unique identifier for this step */
+  stepId: string;
+  /** Function that determines whether this step should be shown */
+  condition: (data: Record<string, any>) => boolean;
+  /** Step content */
+  children: React.ReactNode;
+}

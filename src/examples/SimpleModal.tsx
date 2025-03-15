@@ -343,6 +343,7 @@ export const SimpleMultiStepModal = () => {
     setOpen(false);
   };
 
+  // Pass callbacks directly to the hook
   const modal = useModal('simple-modal', {
     onComplete: handleComplete,
     onCancel: handleCancel
@@ -381,10 +382,7 @@ export const SimpleMultiStepModal = () => {
           id="simple-modal"
           open={open}
           onOpenChange={setOpen}
-          options={{
-            onComplete: handleComplete,
-            onCancel: handleCancel,
-          }}
+          // No need to pass callbacks again, they're already in the hook
         >
           <SimpleModalDialog
             title="User Registration"
