@@ -12,7 +12,7 @@ export type ModalDebuggerProps = {
 const styles = {
   button: {
     position: 'fixed',
-    zIndex: 9999,
+    zIndex: 10000,
     backgroundColor: '#333',
     color: 'white',
     border: 'none',
@@ -24,7 +24,7 @@ const styles = {
 
   debugger: {
     position: 'fixed',
-    zIndex: 9999,
+    zIndex: 10000,
     backgroundColor: 'rgba(0, 0, 0, 0.8)',
     color: 'white',
     borderRadius: '4px',
@@ -110,7 +110,7 @@ const StepItem = ({
   step,
   isCurrentStep
 }: {
-  step: { id: string, data?: Record<string, unknown> },
+  step: { id: string, data?: Record<string, unknown>, previousStep?: string },
   isCurrentStep: boolean
 }) => (
   <div
@@ -122,6 +122,7 @@ const StepItem = ({
     <div>
       <strong>{step.id}</strong>
       {isCurrentStep && <span style={styles.badge}>(Current)</span>}
+      {step.previousStep && <span style={{ ...styles.badge, color: '#ff8' }}>(Previous: {step.previousStep})</span>}
     </div>
 
     {step.data && Object.keys(step.data).length > 0 && (
@@ -139,9 +140,10 @@ const ModalItem = ({
 }: {
   modalId: string;
   modal: {
-    steps: Array<{ id: string, data?: Record<string, unknown> }>,
+    steps: Array<{ id: string, data?: Record<string, unknown>, previousStep?: string }>,
     currentStepIndex: number,
-    data: Record<string, unknown>
+    data: Record<string, unknown>,
+    navigationHistory: string[]
   };
 }) => {
   return (
@@ -162,6 +164,13 @@ const ModalItem = ({
         <div>
           <strong>Data:</strong>
           <pre style={styles.dataDisplay}>{stringify(modal.data)}</pre>
+        </div>
+      )}
+
+      {modal.navigationHistory && modal.navigationHistory.length > 0 && (
+        <div>
+          <strong>Navigation History:</strong>
+          <pre style={styles.dataDisplay}>{modal.navigationHistory.join(' → ')}</pre>
         </div>
       )}
 

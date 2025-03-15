@@ -4,12 +4,16 @@ import { create } from 'zustand';
 export type ModalStep = {
   id: string;
   data?: Record<string, unknown>;
+  // Optional field to specify which step to go back to
+  previousStep?: string;
 };
 
 export type ModalState = {
   steps: ModalStep[];
   currentStepIndex: number;
   data: Record<string, unknown>;
+  // Track navigation history
+  navigationHistory: string[];
 };
 
 // Store interface
@@ -20,10 +24,10 @@ export interface ModalStore {
   // Actions
   openModal: (id: string, initialData?: Record<string, unknown>) => void;
   closeModal: (id: string) => void;
-  addStep: (modalId: string, stepId: string, data?: Record<string, unknown>) => void;
+  addStep: (modalId: string, stepId: string, data?: Record<string, unknown>, previousStep?: string) => void;
   nextStep: (modalId: string, data?: Record<string, unknown>) => void;
   prevStep: (modalId: string) => void;
-  goToStep: (modalId: string, stepId: string, data?: Record<string, unknown>) => void;
+  goToStep: (modalId: string, stepId: string, data?: Record<string, unknown>, addToHistory?: boolean) => void;
   updateData: (modalId: string, data: Record<string, unknown>) => void;
 
   // Getters
@@ -50,6 +54,7 @@ const useModalStore = create<ModalStore>((set, get) => ({
           steps: [],
           currentStepIndex: 0,
           data: { ...initialData },
+          navigationHistory: [],
         },
       },
     }));
@@ -62,14 +67,35 @@ const useModalStore = create<ModalStore>((set, get) => ({
     });
   },
 
-  addStep: (modalId, stepId, data = {}) => {
+  addStep: (modalId, stepId, data = {}, previousStep) => {
     set(state => {
       const modal = state.modals[modalId];
       if (!modal) return state;
 
       // Check if step already exists
-      const stepExists = modal.steps.some(s => s.id === stepId);
-      if (stepExists) return state;
+      const existingStepIndex = modal.steps.findIndex(s => s.id === stepId);
+
+      if (existingStepIndex !== -1) {
+        // Update existing step if previousStep is provided
+        if (previousStep) {
+          const updatedSteps = [...modal.steps];
+          updatedSteps[existingStepIndex] = {
+            ...updatedSteps[existingStepIndex],
+            previousStep
+          };
+
+          return {
+            modals: {
+              ...state.modals,
+              [modalId]: {
+                ...modal,
+                steps: updatedSteps,
+              },
+            },
+          };
+        }
+        return state;
+      }
 
       // Add new step
       return {
@@ -77,7 +103,7 @@ const useModalStore = create<ModalStore>((set, get) => ({
           ...state.modals,
           [modalId]: {
             ...modal,
-            steps: [...modal.steps, { id: stepId, data }],
+            steps: [...modal.steps, { id: stepId, data, previousStep }],
           },
         },
       };
@@ -92,6 +118,13 @@ const useModalStore = create<ModalStore>((set, get) => ({
       const nextIndex = modal.currentStepIndex + 1;
       if (nextIndex >= modal.steps.length) return state;
 
+      // Get current step ID for history
+      const currentStepId = modal.steps[modal.currentStepIndex]?.id;
+      if (!currentStepId) return state;
+
+      // Add current step to history before moving to next
+      const updatedHistory = [...modal.navigationHistory, currentStepId];
+
       return {
         modals: {
           ...state.modals,
@@ -99,6 +132,7 @@ const useModalStore = create<ModalStore>((set, get) => ({
             ...modal,
             currentStepIndex: nextIndex,
             data: { ...modal.data, ...data },
+            navigationHistory: updatedHistory,
           },
         },
       };
@@ -110,6 +144,57 @@ const useModalStore = create<ModalStore>((set, get) => ({
       const modal = state.modals[modalId];
       if (!modal) return state;
 
+      // Get current step
+      const currentStep = modal.steps[modal.currentStepIndex];
+      if (!currentStep) return state;
+
+      // Check if current step has a specified previous step
+      if (currentStep.previousStep) {
+        // Find the index of the specified previous step
+        const prevStepIndex = modal.steps.findIndex(step => step.id === currentStep.previousStep);
+        if (prevStepIndex !== -1) {
+          // Remove the current step from history
+          const updatedHistory = [...modal.navigationHistory];
+          updatedHistory.pop();
+
+          return {
+            modals: {
+              ...state.modals,
+              [modalId]: {
+                ...modal,
+                currentStepIndex: prevStepIndex,
+                navigationHistory: updatedHistory,
+              },
+            },
+          };
+        }
+      }
+
+      // If no specific previous step or not found, use navigation history
+      if (modal.navigationHistory.length > 0) {
+        // Get the last step from history
+        const prevStepId = modal.navigationHistory[modal.navigationHistory.length - 1];
+        const prevStepIndex = modal.steps.findIndex(step => step.id === prevStepId);
+
+        if (prevStepIndex !== -1) {
+          // Remove the last step from history
+          const updatedHistory = [...modal.navigationHistory];
+          updatedHistory.pop();
+
+          return {
+            modals: {
+              ...state.modals,
+              [modalId]: {
+                ...modal,
+                currentStepIndex: prevStepIndex,
+                navigationHistory: updatedHistory,
+              },
+            },
+          };
+        }
+      }
+
+      // Fallback to simple decrement if no history or specific previous step
       const prevIndex = modal.currentStepIndex - 1;
       if (prevIndex < 0) return state;
 
@@ -119,19 +204,29 @@ const useModalStore = create<ModalStore>((set, get) => ({
           [modalId]: {
             ...modal,
             currentStepIndex: prevIndex,
+            navigationHistory: modal.navigationHistory.slice(0, -1),
           },
         },
       };
     });
   },
 
-  goToStep: (modalId, stepId, data = {}) => {
+  goToStep: (modalId, stepId, data = {}, addToHistory = true) => {
     set(state => {
       const modal = state.modals[modalId];
       if (!modal) return state;
 
       const stepIndex = modal.steps.findIndex(step => step.id === stepId);
       if (stepIndex === -1) return state;
+
+      // Get current step ID for history
+      const currentStepId = modal.steps[modal.currentStepIndex]?.id;
+
+      // Update navigation history if needed
+      let updatedHistory = [...modal.navigationHistory];
+      if (addToHistory && currentStepId) {
+        updatedHistory = [...updatedHistory, currentStepId];
+      }
 
       return {
         modals: {
@@ -140,6 +235,7 @@ const useModalStore = create<ModalStore>((set, get) => ({
             ...modal,
             currentStepIndex: stepIndex,
             data: { ...modal.data, ...data },
+            navigationHistory: updatedHistory,
           },
         },
       };
@@ -186,7 +282,11 @@ const useModalStore = create<ModalStore>((set, get) => ({
   },
 
   isFirstStep: modalId => {
-    return get().getCurrentStepIndex(modalId) === 0;
+    const modal = get().modals[modalId];
+    if (!modal) return true;
+
+    // Check if we have navigation history
+    return modal.navigationHistory.length === 0;
   },
 
   isLastStep: modalId => {
