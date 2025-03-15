@@ -1,138 +1,94 @@
-import React, { useEffect, useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import useModalStore from '../core/store';
-import type { ModalOptions, ModalStepProps, ModalFlowProps, ConditionalStepProps } from '../types';
+import type { ModalStep } from '../core/store';
 
-/**
- * Custom hook for interacting with a specific modal
- */
-export function useModal(modalId: string, options?: ModalOptions) {
-  const store = useModalStore();
+export type UseModalOptions = {
+  id: string;
+  initialData?: Record<string, unknown>;
+  steps?: ModalStep[];
+};
 
-  // Register modal on mount and clean up on unmount
-  useEffect(() => {
-    store.openModal(modalId, options?.initialData);
+export function useModal({ id, initialData = {}, steps = [] }: UseModalOptions) {
+  const {
+    openModal,
+    closeModal,
+    addStep,
+    nextStep,
+    prevStep,
+    goToStep,
+    updateData,
+    getModalData,
+    getCurrentStep,
+    getCurrentStepIndex,
+    getTotalSteps,
+    isFirstStep,
+    isLastStep,
+    isModalOpen,
+  } = useModalStore();
 
-    // Clean up the modal when the component unmounts
-    return () => {
-      // Only close if no callbacks are provided (to avoid double-closing)
-      if (!options?.onCancel && !options?.onComplete) {
-        store.closeModal(modalId);
-      }
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [modalId]);
+  // Initialize steps when the hook is first used
+  const initializeSteps = useCallback(() => {
+    steps.forEach(step => {
+      addStep(id, step.id, step.data);
+    });
+  }, [id, steps, addStep]);
 
-  // Helper to determine if a step should be shown based on a condition
-  const shouldShowStep = useCallback((stepId: string, condition?: (data: Record<string, any>) => boolean) => {
-    if (!condition) return true;
-    const data = store.getModalData(modalId);
-    return condition(data);
-  }, [modalId, store]);
+  // Open the modal and initialize steps
+  const open = useCallback((data?: Record<string, unknown>) => {
+    openModal(id, { ...initialData, ...data });
+    initializeSteps();
+  }, [id, initialData, openModal, initializeSteps]);
+
+  // Close the modal
+  const close = useCallback(() => {
+    closeModal(id);
+  }, [id, closeModal]);
+
+  // Go to next step with optional data
+  const next = useCallback((data?: Record<string, unknown>) => {
+    nextStep(id, data);
+  }, [id, nextStep]);
+
+  // Go to previous step
+  const prev = useCallback(() => {
+    prevStep(id);
+  }, [id, prevStep]);
+
+  // Go to a specific step by ID
+  const goTo = useCallback((stepId: string, data?: Record<string, unknown>) => {
+    goToStep(id, stepId, data);
+  }, [id, goToStep]);
+
+  // Update modal data
+  const setData = useCallback((data: Record<string, unknown>) => {
+    updateData(id, data);
+  }, [id, updateData]);
+
+  // Get current modal state
+  const isOpen = useMemo(() => isModalOpen(id), [id, isModalOpen]);
+  const currentStep = useMemo(() => getCurrentStep(id), [id, getCurrentStep]);
+  const currentStepIndex = useMemo(() => getCurrentStepIndex(id), [id, getCurrentStepIndex]);
+  const totalSteps = useMemo(() => getTotalSteps(id), [id, getTotalSteps]);
+  const isFirst = useMemo(() => isFirstStep(id), [id, isFirstStep]);
+  const isLast = useMemo(() => isLastStep(id), [id, isLastStep]);
+  const data = useMemo(() => getModalData(id), [id, getModalData]);
 
   return {
-    // State
-    isOpen: store.isModalOpen(modalId),
-    currentStep: store.getCurrentStep(modalId),
-    currentStepIndex: store.getCurrentStepIndex(modalId),
-    totalSteps: store.getTotalSteps(modalId),
-    isFirstStep: store.isFirstStep(modalId),
-    isLastStep: store.isLastStep(modalId),
-    data: store.getModalData(modalId),
-
     // Actions
-    addStep: (stepId: string) => store.addStep(modalId, stepId),
-    nextStep: (data?: Record<string, any>) => store.nextStep(modalId, data),
-    prevStep: () => store.prevStep(modalId),
-    updateData: (data: Record<string, any>) => store.updateData(modalId, data),
-    shouldShowStep,
+    open,
+    close,
+    next,
+    prev,
+    goTo,
+    setData,
 
-    // Modal lifecycle
-    close: () => {
-      if (options?.onCancel) options.onCancel();
-      store.closeModal(modalId);
-    },
-    complete: () => {
-      const data = store.getModalData(modalId);
-      if (options?.onComplete) options.onComplete(data);
-      store.closeModal(modalId);
-    }
+    // State
+    isOpen,
+    currentStep,
+    currentStepIndex,
+    totalSteps,
+    isFirst,
+    isLast,
+    data,
   };
-}
-
-/**
- * Component for rendering a specific step in a modal flow
- */
-export function ModalStep({ modalId, stepId, children }: ModalStepProps) {
-  const { currentStep, addStep } = useModal(modalId);
-
-  // Register this step with the modal
-  useEffect(() => {
-    addStep(stepId);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stepId]);
-
-  // Only render if this is the current step
-  if (currentStep !== stepId) {
-    return null;
-  }
-
-  return <>{children}</>;
-}
-
-/**
- * Component for rendering a conditional step in a modal flow
- * Only registers and renders if the condition is met
- */
-export function ConditionalStep({
-  modalId,
-  stepId,
-  condition,
-  children
-}: ConditionalStepProps) {
-  const modal = useModal(modalId);
-  const shouldShow = modal.shouldShowStep(stepId, condition);
-
-  // Only register this step with the modal if the condition is met
-  useEffect(() => {
-    if (shouldShow) {
-      modal.addStep(stepId);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stepId, shouldShow]);
-
-  // Only render if this is the current step and condition is met
-  if (modal.currentStep !== stepId || !shouldShow) {
-    return null;
-  }
-
-  return <>{children}</>;
-}
-
-/**
- * Component for connecting a modal UI to the modal state manager
- */
-export function ModalFlow({ id, open, onOpenChange, children, options }: ModalFlowProps) {
-  const store = useModalStore();
-
-  // Register the modal with the store
-  useEffect(() => {
-    if (open) {
-      store.openModal(id, options?.initialData);
-    }
-  }, [id, open, options?.initialData, store]);
-
-  // Handle modal closing from the store
-  useEffect(() => {
-    const isOpen = store.isModalOpen(id);
-    if (!isOpen && open) {
-      // If the modal is closed in the store but still open in the parent component,
-      // update the parent component's state
-      onOpenChange(false);
-    }
-  }, [id, open, onOpenChange, store]);
-
-  // Only render children when open is true
-  if (!open) return null;
-
-  return <>{children}</>;
 }

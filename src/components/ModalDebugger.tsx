@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
 import useModalStore from '../core/store';
-import type { ModalDebuggerProps } from '../types';
+
+export type ModalDebuggerProps = {
+  position?: 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left';
+  initiallyOpen?: boolean;
+};
 
 /**
  * Styles for the debugger component
@@ -91,7 +95,7 @@ const styles = {
 /**
  * Helper to stringify data
  */
-const stringify = (data: any): string => {
+const stringify = (data: Record<string, unknown>): string => {
   try {
     return JSON.stringify(data, null, 2);
   } catch (error) {
@@ -102,7 +106,13 @@ const stringify = (data: any): string => {
 /**
  * Renders a single step in the debugger
  */
-const StepItem = ({ step, isCurrentStep }: { step: { id: string, data: any }, isCurrentStep: boolean }) => (
+const StepItem = ({
+  step,
+  isCurrentStep
+}: {
+  step: { id: string, data?: Record<string, unknown> },
+  isCurrentStep: boolean
+}) => (
   <div
     style={{
       ...styles.stepItem,
@@ -128,7 +138,11 @@ const ModalItem = ({
   modal
 }: {
   modalId: string;
-  modal: { steps: Array<{ id: string, data: any }>, currentStepIndex: number, data: any };
+  modal: {
+    steps: Array<{ id: string, data?: Record<string, unknown> }>,
+    currentStepIndex: number,
+    data: Record<string, unknown>
+  };
 }) => {
   return (
     <div style={styles.modalItem}>

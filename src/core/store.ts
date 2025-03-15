@@ -1,32 +1,33 @@
 import { create } from 'zustand';
 
-// Simple types for our store
-type ModalStep = {
+// Define our types
+export type ModalStep = {
   id: string;
-  data: Record<string, any>;
+  data?: Record<string, unknown>;
 };
 
-type ModalState = {
+export type ModalState = {
   steps: ModalStep[];
   currentStepIndex: number;
-  data: Record<string, any>;
+  data: Record<string, unknown>;
 };
 
-// Simple store interface
-interface ModalStore {
+// Store interface
+export interface ModalStore {
   // State
   modals: Record<string, ModalState>;
 
   // Actions
-  openModal: (id: string, initialData?: Record<string, any>) => void;
+  openModal: (id: string, initialData?: Record<string, unknown>) => void;
   closeModal: (id: string) => void;
-  addStep: (modalId: string, stepId: string, data?: Record<string, any>) => void;
-  nextStep: (modalId: string, data?: Record<string, any>) => void;
+  addStep: (modalId: string, stepId: string, data?: Record<string, unknown>) => void;
+  nextStep: (modalId: string, data?: Record<string, unknown>) => void;
   prevStep: (modalId: string) => void;
-  updateData: (modalId: string, data: Record<string, any>) => void;
+  goToStep: (modalId: string, stepId: string, data?: Record<string, unknown>) => void;
+  updateData: (modalId: string, data: Record<string, unknown>) => void;
 
   // Getters
-  getModalData: (modalId: string) => Record<string, any>;
+  getModalData: (modalId: string) => Record<string, unknown>;
   getCurrentStep: (modalId: string) => string | null;
   getCurrentStepIndex: (modalId: string) => number;
   getTotalSteps: (modalId: string) => number;
@@ -118,6 +119,27 @@ const useModalStore = create<ModalStore>((set, get) => ({
           [modalId]: {
             ...modal,
             currentStepIndex: prevIndex,
+          },
+        },
+      };
+    });
+  },
+
+  goToStep: (modalId, stepId, data = {}) => {
+    set(state => {
+      const modal = state.modals[modalId];
+      if (!modal) return state;
+
+      const stepIndex = modal.steps.findIndex(step => step.id === stepId);
+      if (stepIndex === -1) return state;
+
+      return {
+        modals: {
+          ...state.modals,
+          [modalId]: {
+            ...modal,
+            currentStepIndex: stepIndex,
+            data: { ...modal.data, ...data },
           },
         },
       };

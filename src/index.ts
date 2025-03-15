@@ -1,24 +1,17 @@
-/**
- * Modal Manager
- * A flexible state management library for multi-step dialogs and modals in React applications
- */
-
-// Core exports
+// Core
 export { default as useModalStore } from './core/store';
+export type { ModalStep, ModalState } from './core/store';
 
-// Hook exports
-export { useModal, ModalStep, ModalFlow, ConditionalStep } from './hooks/useModal';
+// Hooks
+export { useModal } from './hooks/useModal';
+export type { UseModalOptions } from './hooks/useModal';
 
-// Component exports
+// Components
+export { ModalContent } from './components/ModalContent';
+export type { ModalContentProps } from './components/ModalContent';
+
+export { Step, StepRenderer } from './components/StepRenderer';
+export type { StepProps, StepRendererProps } from './components/StepRenderer';
+
 export { ModalDebugger } from './components/ModalDebugger';
-
-// Type exports
-export type {
-  ModalStep as ModalStepType,
-  ModalState,
-  ModalOptions,
-  ModalFlowProps,
-  ModalStepProps,
-  ModalDebuggerProps,
-  ConditionalStepProps,
-} from './types';
+export type { ModalDebuggerProps } from './components/ModalDebugger';
