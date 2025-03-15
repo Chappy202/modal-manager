@@ -17,12 +17,13 @@ export const safeStringify = (value: unknown): string => {
  * @returns True if the value is a plain object
  */
 export const isPlainObject = (value: unknown): value is Record<string, unknown> => {
-  return (
-    value !== null &&
-    typeof value === 'object' &&
-    !Array.isArray(value) &&
-    Object.getPrototypeOf(value) === Object.prototype
-  );
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) {
+    return false;
+  }
+
+  // Handle Object.create(null)
+  const proto = Object.getPrototypeOf(value);
+  return proto === null || proto === Object.prototype;
 };
 
 /**
