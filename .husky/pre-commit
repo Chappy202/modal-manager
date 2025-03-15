@@ -1,0 +1,8 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Run linting and fix automatically if possible
+pnpm lint --fix || true
+
+# Skip tests for now since they don't exist
+# pnpm test

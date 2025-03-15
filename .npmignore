@@ -1,0 +1,23 @@
+# Source files
+src/
+examples/
+tests/
+
+# Config files
+.github/
+.vscode/
+.eslintrc.js
+.prettierrc
+.gitignore
+tsconfig.json
+rsbuild.config.ts
+jest.config.js
+
+# Build artifacts
+dist-dev/
+coverage/
+node_modules/
+
+# Misc
+*.log
+.DS_Store

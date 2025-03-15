@@ -98,7 +98,7 @@ const styles = {
 const stringify = (data: Record<string, unknown>): string => {
   try {
     return JSON.stringify(data, null, 2);
-  } catch (error) {
+  } catch (_error) {
     return '[Error: Unable to stringify]';
   }
 };
@@ -108,10 +108,10 @@ const stringify = (data: Record<string, unknown>): string => {
  */
 const StepItem = ({
   step,
-  isCurrentStep
+  isCurrentStep,
 }: {
-  step: { id: string, data?: Record<string, unknown>, previousStep?: string },
-  isCurrentStep: boolean
+  step: { id: string; data?: Record<string, unknown>; previousStep?: string };
+  isCurrentStep: boolean;
 }) => (
   <div
     style={{
@@ -122,7 +122,9 @@ const StepItem = ({
     <div>
       <strong>{step.id}</strong>
       {isCurrentStep && <span style={styles.badge}>(Current)</span>}
-      {step.previousStep && <span style={{ ...styles.badge, color: '#ff8' }}>(Previous: {step.previousStep})</span>}
+      {step.previousStep && (
+        <span style={{ ...styles.badge, color: '#ff8' }}>(Previous: {step.previousStep})</span>
+      )}
     </div>
 
     {step.data && Object.keys(step.data).length > 0 && (
@@ -136,14 +138,14 @@ const StepItem = ({
  */
 const ModalItem = ({
   modalId,
-  modal
+  modal,
 }: {
   modalId: string;
   modal: {
-    steps: Array<{ id: string, data?: Record<string, unknown>, previousStep?: string }>,
-    currentStepIndex: number,
-    data: Record<string, unknown>,
-    navigationHistory: string[]
+    steps: Array<{ id: string; data?: Record<string, unknown>; previousStep?: string }>;
+    currentStepIndex: number;
+    data: Record<string, unknown>;
+    navigationHistory: string[];
   };
 }) => {
   return (
@@ -247,11 +249,7 @@ export function ModalDebugger({
         ) : (
           <div>
             {modalEntries.map(([modalId, modal]) => (
-              <ModalItem
-                key={modalId}
-                modalId={modalId}
-                modal={modal}
-              />
+              <ModalItem key={modalId} modalId={modalId} modal={modal} />
             ))}
           </div>
         )}

@@ -24,10 +24,20 @@ export interface ModalStore {
   // Actions
   openModal: (id: string, initialData?: Record<string, unknown>) => void;
   closeModal: (id: string) => void;
-  addStep: (modalId: string, stepId: string, data?: Record<string, unknown>, previousStep?: string) => void;
+  addStep: (
+    modalId: string,
+    stepId: string,
+    data?: Record<string, unknown>,
+    previousStep?: string,
+  ) => void;
   nextStep: (modalId: string, data?: Record<string, unknown>) => void;
   prevStep: (modalId: string) => void;
-  goToStep: (modalId: string, stepId: string, data?: Record<string, unknown>, addToHistory?: boolean) => void;
+  goToStep: (
+    modalId: string,
+    stepId: string,
+    data?: Record<string, unknown>,
+    addToHistory?: boolean,
+  ) => void;
   updateData: (modalId: string, data: Record<string, unknown>) => void;
 
   // Getters
@@ -62,7 +72,7 @@ const useModalStore = create<ModalStore>((set, get) => ({
 
   closeModal: id => {
     set(state => {
-      const { [id]: _, ...rest } = state.modals;
+      const { [id]: _removed, ...rest } = state.modals;
       return { modals: rest };
     });
   },
@@ -81,7 +91,7 @@ const useModalStore = create<ModalStore>((set, get) => ({
           const updatedSteps = [...modal.steps];
           updatedSteps[existingStepIndex] = {
             ...updatedSteps[existingStepIndex],
-            previousStep
+            previousStep,
           };
 
           return {
