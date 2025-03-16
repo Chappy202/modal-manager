@@ -1,7 +1,7 @@
 import { create } from 'zustand';
-import type { ModalStep, ModalState, ModalStore } from '../types/store';
+import type { ModalStore } from '../types/store';
 
-export { type ModalStep, type ModalState } from '../types/store';
+export type { ModalStep, ModalState } from '../types/store';
 
 // Create the store
 const useModalStore = create<ModalStore>((set, get) => ({

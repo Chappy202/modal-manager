@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import useModalStore from '../core/store';
 import type { UseModalOptions, UseModalReturn } from '../types/hooks';
 
