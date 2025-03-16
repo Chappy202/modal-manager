@@ -31,6 +31,7 @@ export default defineConfig({
             type: 'umd',
             name: 'ModalManager',
           },
+          cleanDistPath: true,
         }
       : {}),
     // Development configuration
