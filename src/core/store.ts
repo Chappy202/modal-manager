@@ -72,7 +72,7 @@ const useModalStore = create<ModalStore>((set, get) => ({
 
   closeModal: id => {
     set(state => {
-      const { [id]: _removed, ...rest } = state.modals;
+      const { [id]: _, ...rest } = state.modals;
       return { modals: rest };
     });
   },

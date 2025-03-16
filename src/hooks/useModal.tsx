@@ -26,8 +26,8 @@ export function useModal({ id, initialData = {}, steps = [] }: UseModalOptions) 
     isModalOpen,
   } = useModalStore();
 
-  // Local state to track changes
-  const [forceUpdate, setForceUpdate] = useState({});
+  // Local state to track changes - rename to _ since we only use setState
+  const [_, setForceUpdate] = useState({});
 
   // Initialize steps when the hook is first used
   const initializeSteps = useCallback(() => {

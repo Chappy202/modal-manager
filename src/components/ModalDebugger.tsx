@@ -98,7 +98,7 @@ const styles = {
 const stringify = (data: Record<string, unknown>): string => {
   try {
     return JSON.stringify(data, null, 2);
-  } catch (_error) {
+  } catch {
     return '[Error: Unable to stringify]';
   }
 };
