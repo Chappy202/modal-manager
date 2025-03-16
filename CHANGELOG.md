@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.1](https://github.com/Chappy202/modal-manager/compare/v0.1.0...v0.1.1) (2025-03-16)
+
+
+### 🐛 Bug Fixes
+
+* resolve linting errors ([abe99eb](https://github.com/Chappy202/modal-manager/commit/abe99eb7b1e7d094b2ecb64ba0225c8350606ba5))
+
 ## [0.1.0](https://github.com/Chappy202/modal-manager/compare/v0.1.3...v0.1.0) (2025-03-16)
 
 
