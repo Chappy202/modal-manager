@@ -3,7 +3,7 @@ import { useModal, ModalContent, Step, StepRenderer } from '../../src';
 import { Modal } from './Modal';
 
 export function PaymentExample() {
-  const { isOpen, open, close, goTo, setData, data, addStep } = useModal({
+  const { isOpen, open, close, goTo, setData, data, addStep, currentStep, prev } = useModal({
     id: 'payment-example',
     steps: [
       { id: 'method' },
@@ -71,7 +71,6 @@ export function PaymentExample() {
   };
 
   const handleOpen = () => {
-    console.log('Opening payment example modal');
     open();
   };
 
@@ -86,160 +85,153 @@ export function PaymentExample() {
       </div>
       <div className="example-card-body">
         <p>A payment flow with conditional steps based on payment method.</p>
-        <p className="debug-info">Modal state: {isOpen ? 'Open' : 'Closed'}</p>
       </div>
       <div className="example-card-footer">
         <button className="button" onClick={handleOpen}>Make Payment</button>
       </div>
 
       <Modal isOpen={isOpen} onClose={handleClose} title="Payment Flow">
-        <ModalContent id="payment-example">
-          {({ currentStep, prev, close }) => (
-            <>
-              <StepRenderer currentStep={currentStep}>
-                <Step id="method">
-                  <h3>Select Payment Method</h3>
-                  <p>Choose how you would like to pay:</p>
-                  <div className="button-group">
-                    <button
-                      className="button"
-                      onClick={() => handlePaymentMethodSelect('card')}
-                    >
-                      Credit Card
-                    </button>
-                    <button
-                      className="button secondary"
-                      onClick={() => handlePaymentMethodSelect('bank')}
-                    >
-                      Bank Transfer
-                    </button>
-                  </div>
-                </Step>
+        <StepRenderer currentStep={currentStep}>
+          <Step id="method">
+            <h3>Select Payment Method</h3>
+            <p>Choose how you would like to pay:</p>
+            <div className="button-group">
+              <button
+                className="button"
+                onClick={() => handlePaymentMethodSelect('card')}
+              >
+                Credit Card
+              </button>
+              <button
+                className="button secondary"
+                onClick={() => handlePaymentMethodSelect('bank')}
+              >
+                Bank Transfer
+              </button>
+            </div>
+          </Step>
 
-                <Step id="card-details">
-                  <h3>Enter Card Details</h3>
-                  <div className="form-group">
-                    <label className="form-label">Card Number</label>
-                    <input
-                      type="text"
-                      name="cardNumber"
-                      value={formData.cardNumber}
-                      onChange={handleInputChange}
-                      className="form-input"
-                      placeholder="1234 5678 9012 3456"
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label className="form-label">Name on Card</label>
-                    <input
-                      type="text"
-                      name="cardName"
-                      value={formData.cardName}
-                      onChange={handleInputChange}
-                      className="form-input"
-                      placeholder="John Doe"
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label className="form-label">Expiry Date</label>
-                    <input
-                      type="text"
-                      name="cardExpiry"
-                      value={formData.cardExpiry}
-                      onChange={handleInputChange}
-                      className="form-input"
-                      placeholder="MM/YY"
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label className="form-label">CVV</label>
-                    <input
-                      type="text"
-                      name="cardCvv"
-                      value={formData.cardCvv}
-                      onChange={handleInputChange}
-                      className="form-input"
-                      placeholder="123"
-                    />
-                  </div>
-                  <div className="button-group">
-                    <button className="button secondary" onClick={() => prev()}>Back</button>
-                    <button className="button" onClick={handleSubmitCardDetails}>Continue</button>
-                  </div>
-                </Step>
+          <Step id="card-details">
+            <h3>Enter Card Details</h3>
+            <div className="form-group">
+              <label className="form-label">Card Number</label>
+              <input
+                type="text"
+                name="cardNumber"
+                value={formData.cardNumber}
+                onChange={handleInputChange}
+                className="form-input"
+                placeholder="1234 5678 9012 3456"
+              />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Name on Card</label>
+              <input
+                type="text"
+                name="cardName"
+                value={formData.cardName}
+                onChange={handleInputChange}
+                className="form-input"
+                placeholder="John Doe"
+              />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Expiry Date</label>
+              <input
+                type="text"
+                name="cardExpiry"
+                value={formData.cardExpiry}
+                onChange={handleInputChange}
+                className="form-input"
+                placeholder="MM/YY"
+              />
+            </div>
+            <div className="form-group">
+              <label className="form-label">CVV</label>
+              <input
+                type="text"
+                name="cardCvv"
+                value={formData.cardCvv}
+                onChange={handleInputChange}
+                className="form-input"
+                placeholder="123"
+              />
+            </div>
+            <div className="button-group">
+              <button className="button secondary" onClick={() => prev()}>Back</button>
+              <button className="button" onClick={handleSubmitCardDetails}>Continue</button>
+            </div>
+          </Step>
 
-                <Step id="bank-details">
-                  <h3>Enter Bank Details</h3>
-                  <div className="form-group">
-                    <label className="form-label">Bank Name</label>
-                    <input
-                      type="text"
-                      name="bankName"
-                      value={formData.bankName}
-                      onChange={handleInputChange}
-                      className="form-input"
-                      placeholder="Bank of America"
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label className="form-label">Account Number</label>
-                    <input
-                      type="text"
-                      name="accountNumber"
-                      value={formData.accountNumber}
-                      onChange={handleInputChange}
-                      className="form-input"
-                      placeholder="123456789"
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label className="form-label">Routing Number</label>
-                    <input
-                      type="text"
-                      name="routingNumber"
-                      value={formData.routingNumber}
-                      onChange={handleInputChange}
-                      className="form-input"
-                      placeholder="987654321"
-                    />
-                  </div>
-                  <div className="button-group">
-                    <button className="button secondary" onClick={() => prev()}>Back</button>
-                    <button className="button" onClick={handleSubmitBankDetails}>Continue</button>
-                  </div>
-                </Step>
+          <Step id="bank-details">
+            <h3>Enter Bank Details</h3>
+            <div className="form-group">
+              <label className="form-label">Bank Name</label>
+              <input
+                type="text"
+                name="bankName"
+                value={formData.bankName}
+                onChange={handleInputChange}
+                className="form-input"
+                placeholder="Bank of America"
+              />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Account Number</label>
+              <input
+                type="text"
+                name="accountNumber"
+                value={formData.accountNumber}
+                onChange={handleInputChange}
+                className="form-input"
+                placeholder="123456789"
+              />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Routing Number</label>
+              <input
+                type="text"
+                name="routingNumber"
+                value={formData.routingNumber}
+                onChange={handleInputChange}
+                className="form-input"
+                placeholder="987654321"
+              />
+            </div>
+            <div className="button-group">
+              <button className="button secondary" onClick={() => prev()}>Back</button>
+              <button className="button" onClick={handleSubmitBankDetails}>Continue</button>
+            </div>
+          </Step>
 
-                <Step id="confirm">
-                  <h3>Confirm Payment</h3>
-                  <p>Please review your payment details:</p>
+          <Step id="confirm">
+            <h3>Confirm Payment</h3>
+            <p>Please review your payment details:</p>
 
-                  <div className="card">
-                    <p><strong>Payment Method:</strong> {data.paymentMethod === 'card' ? 'Credit Card' : 'Bank Transfer'}</p>
+            <div className="card">
+              <p><strong>Payment Method:</strong> {data.paymentMethod === 'card' ? 'Credit Card' : 'Bank Transfer'}</p>
 
-                    {data.paymentMethod === 'card' && 'cardDetails' in data && (
-                      <>
-                        <p><strong>Card Number:</strong> **** **** **** {formData.cardNumber.slice(-4)}</p>
-                        <p><strong>Name on Card:</strong> {formData.cardName}</p>
-                      </>
-                    )}
+              {data.paymentMethod === 'card' && 'cardDetails' in data && (
+                <>
+                  <p><strong>Card Number:</strong> **** **** **** {formData.cardNumber.slice(-4)}</p>
+                  <p><strong>Name on Card:</strong> {formData.cardName}</p>
+                </>
+              )}
 
-                    {data.paymentMethod === 'bank' && 'bankDetails' in data && (
-                      <>
-                        <p><strong>Bank:</strong> {formData.bankName}</p>
-                        <p><strong>Account:</strong> *****{formData.accountNumber.slice(-4)}</p>
-                      </>
-                    )}
-                  </div>
+              {data.paymentMethod === 'bank' && 'bankDetails' in data && (
+                <>
+                  <p><strong>Bank:</strong> {formData.bankName}</p>
+                  <p><strong>Account:</strong> *****{formData.accountNumber.slice(-4)}</p>
+                </>
+              )}
+            </div>
 
-                  <div className="button-group">
-                    <button className="button secondary" onClick={() => prev()}>Back</button>
-                    <button className="button" onClick={handleClose}>Confirm Payment</button>
-                  </div>
-                </Step>
-              </StepRenderer>
-            </>
-          )}
-        </ModalContent>
+            <div className="button-group">
+              <button className="button secondary" onClick={() => prev()}>Back</button>
+              <button className="button" onClick={handleClose}>Confirm Payment</button>
+            </div>
+          </Step>
+        </StepRenderer>
       </Modal>
     </div>
   );

@@ -1,54 +1,7 @@
 import { create } from 'zustand';
+import type { ModalStep, ModalState, ModalStore } from '../types/store';
 
-// Define our types
-export type ModalStep = {
-  id: string;
-  data?: Record<string, unknown>;
-  // Optional field to specify which step to go back to
-  previousStep?: string;
-};
-
-export type ModalState = {
-  steps: ModalStep[];
-  currentStepIndex: number;
-  data: Record<string, unknown>;
-  // Track navigation history
-  navigationHistory: string[];
-};
-
-// Store interface
-export interface ModalStore {
-  // State
-  modals: Record<string, ModalState>;
-
-  // Actions
-  openModal: (id: string, initialData?: Record<string, unknown>) => void;
-  closeModal: (id: string) => void;
-  addStep: (
-    modalId: string,
-    stepId: string,
-    data?: Record<string, unknown>,
-    previousStep?: string,
-  ) => void;
-  nextStep: (modalId: string, data?: Record<string, unknown>) => void;
-  prevStep: (modalId: string) => void;
-  goToStep: (
-    modalId: string,
-    stepId: string,
-    data?: Record<string, unknown>,
-    addToHistory?: boolean,
-  ) => void;
-  updateData: (modalId: string, data: Record<string, unknown>) => void;
-
-  // Getters
-  getModalData: (modalId: string) => Record<string, unknown>;
-  getCurrentStep: (modalId: string) => string | null;
-  getCurrentStepIndex: (modalId: string) => number;
-  getTotalSteps: (modalId: string) => number;
-  isFirstStep: (modalId: string) => boolean;
-  isLastStep: (modalId: string) => boolean;
-  isModalOpen: (modalId: string) => boolean;
-}
+export { type ModalStep, type ModalState } from '../types/store';
 
 // Create the store
 const useModalStore = create<ModalStore>((set, get) => ({
@@ -307,7 +260,8 @@ const useModalStore = create<ModalStore>((set, get) => ({
   },
 
   isModalOpen: modalId => {
-    return !!get().modals[modalId];
+    const isOpen = !!get().modals[modalId];
+    return isOpen;
   },
 }));
 

@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
 import useModalStore from '../core/store';
+import type { ModalDebuggerProps } from '../types/components';
 
-export type ModalDebuggerProps = {
-  position?: 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left';
-  initiallyOpen?: boolean;
-};
+export { type ModalDebuggerProps } from '../types/components';
 
 /**
  * Styles for the debugger component

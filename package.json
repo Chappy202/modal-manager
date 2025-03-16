@@ -12,7 +12,7 @@
     "CHANGELOG.md"
   ],
   "scripts": {
-    "build": "cross-env NODE_ENV=production rsbuild build",
+    "build": "cross-env NODE_ENV=production rsbuild build && tsc --emitDeclarationOnly --outDir dist/types",
     "dev": "cross-env NODE_ENV=development rsbuild dev",
     "lint": "eslint src --ext .ts,.tsx",
     "format": "prettier --write \"src/**/*.{ts,tsx}\"",
@@ -34,7 +34,8 @@
     "dialog",
     "state-management",
     "multi-step",
-    "wizard"
+    "wizard",
+    "modal-manager"
   ],
   "author": "JJ Badenhorst",
   "license": "MIT",

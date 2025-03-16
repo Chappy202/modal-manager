@@ -128,7 +128,6 @@ export function App() {
           <button
             className="button"
             onClick={() => {
-              console.log('Opening library modal');
               openLibraryModal();
               // Force immediate update
               forceUpdate({});

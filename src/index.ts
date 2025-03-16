@@ -15,3 +15,6 @@ export type { StepProps, StepRendererProps } from './components/StepRenderer';
 
 export { ModalDebugger } from './components/ModalDebugger';
 export type { ModalDebuggerProps } from './components/ModalDebugger';
+
+// Types
+export * from './types';

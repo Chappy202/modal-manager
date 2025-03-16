@@ -139,7 +139,7 @@ const CustomButton = ({
 );
 
 export function CustomUIExample() {
-  const { isOpen, open, close } = useModal({
+  const { isOpen, open, close, currentStep, next, prev, isFirst, isLast } = useModal({
     id: 'custom-ui-example',
     steps: [
       { id: 'welcome' },
@@ -149,7 +149,6 @@ export function CustomUIExample() {
   });
 
   const handleOpen = () => {
-    console.log('Opening custom UI modal');
     open();
   };
 
@@ -164,80 +163,73 @@ export function CustomUIExample() {
       </div>
       <div className="example-card-body">
         <p>Using the library with a completely custom UI.</p>
-        <p className="debug-info">Modal state: {isOpen ? 'Open' : 'Closed'}</p>
       </div>
       <div className="example-card-footer">
         <button className="button" onClick={handleOpen}>Open Custom Modal</button>
       </div>
 
       <CustomModal isOpen={isOpen} onClose={handleClose}>
-        <ModalContent id="custom-ui-example">
-          {({ currentStep, next, prev, isFirst, isLast }) => (
-            <>
-              <CustomHeader
-                title={
-                  currentStep === 'welcome' ? 'Welcome' :
-                  currentStep === 'features' ? 'Key Features' :
-                  'Get Started'
-                }
-                onClose={handleClose}
-              />
+        <CustomHeader
+          title={
+            currentStep === 'welcome' ? 'Welcome' :
+            currentStep === 'features' ? 'Key Features' :
+            'Get Started'
+          }
+          onClose={handleClose}
+        />
 
-              <CustomBody>
-                <StepRenderer currentStep={currentStep}>
-                  <Step id="welcome">
-                    <h3 style={{ color: '#f5c2e7', marginBottom: '15px' }}>Welcome to Stepped Modal</h3>
-                    <p style={{ marginBottom: '20px' }}>
-                      This example demonstrates how you can use the Stepped Modal library with your own custom UI components.
-                    </p>
-                    <p style={{ marginBottom: '20px' }}>
-                      The library is UI-agnostic, meaning you can use it with any component library or custom components.
-                    </p>
-                  </Step>
+        <CustomBody>
+          <StepRenderer currentStep={currentStep}>
+            <Step id="welcome">
+              <h3 style={{ color: '#f5c2e7', marginBottom: '15px' }}>Welcome to Stepped Modal</h3>
+              <p style={{ marginBottom: '20px' }}>
+                This example demonstrates how you can use the Stepped Modal library with your own custom UI components.
+              </p>
+              <p style={{ marginBottom: '20px' }}>
+                The library is UI-agnostic, meaning you can use it with any component library or custom components.
+              </p>
+            </Step>
 
-                  <Step id="features">
-                    <h3 style={{ color: '#f5c2e7', marginBottom: '15px' }}>Key Features</h3>
-                    <ul style={{ marginBottom: '20px', paddingLeft: '20px' }}>
-                      <li style={{ marginBottom: '8px' }}>Multi-step flows in a single modal</li>
-                      <li style={{ marginBottom: '8px' }}>Conditional navigation between steps</li>
-                      <li style={{ marginBottom: '8px' }}>Data persistence across steps</li>
-                      <li style={{ marginBottom: '8px' }}>Framework-agnostic design</li>
-                      <li style={{ marginBottom: '8px' }}>TypeScript support</li>
-                    </ul>
-                  </Step>
+            <Step id="features">
+              <h3 style={{ color: '#f5c2e7', marginBottom: '15px' }}>Key Features</h3>
+              <ul style={{ marginBottom: '20px', paddingLeft: '20px' }}>
+                <li style={{ marginBottom: '8px' }}>Multi-step flows in a single modal</li>
+                <li style={{ marginBottom: '8px' }}>Conditional navigation between steps</li>
+                <li style={{ marginBottom: '8px' }}>Data persistence across steps</li>
+                <li style={{ marginBottom: '8px' }}>Framework-agnostic design</li>
+                <li style={{ marginBottom: '8px' }}>TypeScript support</li>
+              </ul>
+            </Step>
 
-                  <Step id="conclusion">
-                    <h3 style={{ color: '#f5c2e7', marginBottom: '15px' }}>Get Started</h3>
-                    <p style={{ marginBottom: '20px' }}>
-                      You're now ready to use Stepped Modal in your own projects!
-                    </p>
-                    <p style={{ marginBottom: '20px' }}>
-                      Check out the documentation for more examples and API details.
-                    </p>
-                  </Step>
-                </StepRenderer>
+            <Step id="conclusion">
+              <h3 style={{ color: '#f5c2e7', marginBottom: '15px' }}>Get Started</h3>
+              <p style={{ marginBottom: '20px' }}>
+                You're now ready to use Stepped Modal in your own projects!
+              </p>
+              <p style={{ marginBottom: '20px' }}>
+                Check out the documentation for more examples and API details.
+              </p>
+            </Step>
+          </StepRenderer>
 
-                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '20px' }}>
-                  {!isFirst && (
-                    <CustomButton variant="secondary" onClick={() => prev()}>
-                      Back
-                    </CustomButton>
-                  )}
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '20px' }}>
+            {!isFirst && (
+              <CustomButton variant="secondary" onClick={() => prev()}>
+                Back
+              </CustomButton>
+            )}
 
-                  {!isLast ? (
-                    <CustomButton onClick={() => next()}>
-                      Next
-                    </CustomButton>
-                  ) : (
-                    <CustomButton onClick={handleClose}>
-                      Finish
-                    </CustomButton>
-                  )}
-                </div>
-              </CustomBody>
-            </>
-          )}
-        </ModalContent>
+            {!isLast ? (
+              <CustomButton onClick={() => next()}>
+                Next
+              </CustomButton>
+            ) : (
+              <CustomButton onClick={handleClose}>
+                Finish
+              </CustomButton>
+            )}
+          </div>
+        </CustomBody>
       </CustomModal>
     </div>
   );

@@ -10,11 +10,6 @@ type ModalProps = {
 
 export function Modal({ isOpen, onClose, title, children }: ModalProps) {
   const [modalRoot, setModalRoot] = useState<HTMLElement | null>(null);
-  const [localIsOpen, setLocalIsOpen] = useState(isOpen);
-
-  useEffect(() => {
-    setLocalIsOpen(isOpen);
-  }, [isOpen]);
 
   useEffect(() => {
     let element = document.getElementById('modal-root');
@@ -41,7 +36,7 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
     }
   }, [isOpen, modalRoot]);
 
-  if (!localIsOpen || !modalRoot) return null;
+  if (!isOpen || !modalRoot) return null;
 
   const modalContent = (
     <div className="modal-overlay" onClick={onClose}>

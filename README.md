@@ -16,7 +16,6 @@ A lightweight, flexible library for managing multi-step modals in React applicat
 - [Debugging](#debugging)
 - [API Reference](#api-reference)
   - [useModal](#usemodal)
-  - [ModalContent](#modalcontent)
   - [StepRenderer and Step](#steprenderer-and-step)
   - [ModalDebugger](#modaldebugger)
 - [License](#license)
@@ -45,11 +44,11 @@ pnpm add modal-manager
 ## Basic Usage
 
 ```tsx
-import { useModal, ModalContent, Step, StepRenderer } from 'modal-manager';
+import { useModal, Step, StepRenderer } from 'modal-manager';
 import { Dialog } from 'your-ui-library';
 
 function MyModal() {
-  const { isOpen, open, close } = useModal({
+  const { isOpen, open, close, currentStep, next, prev, isFirst, isLast } = useModal({
     id: 'my-modal',
     steps: [
       { id: 'step1' },
@@ -63,37 +62,31 @@ function MyModal() {
       <button onClick={open}>Open Modal</button>
       
       <Dialog open={isOpen} onClose={close}>
-        <ModalContent id="my-modal">
-          {({ currentStep, next, prev, isFirst, isLast }) => (
-            <>
-              <StepRenderer currentStep={currentStep}>
-                <Step id="step1">
-                  <h2>Step 1</h2>
-                  <p>This is the first step</p>
-                </Step>
-                
-                <Step id="step2">
-                  <h2>Step 2</h2>
-                  <p>This is the second step</p>
-                </Step>
-                
-                <Step id="step3">
-                  <h2>Step 3</h2>
-                  <p>This is the final step</p>
-                </Step>
-              </StepRenderer>
-              
-              <div className="buttons">
-                {!isFirst && <button onClick={prev}>Back</button>}
-                {!isLast ? (
-                  <button onClick={next}>Next</button>
-                ) : (
-                  <button onClick={close}>Finish</button>
-                )}
-              </div>
-            </>
+        <StepRenderer currentStep={currentStep}>
+          <Step id="step1">
+            <h2>Step 1</h2>
+            <p>This is the first step</p>
+          </Step>
+          
+          <Step id="step2">
+            <h2>Step 2</h2>
+            <p>This is the second step</p>
+          </Step>
+          
+          <Step id="step3">
+            <h2>Step 3</h2>
+            <p>This is the final step</p>
+          </Step>
+        </StepRenderer>
+        
+        <div className="buttons">
+          {!isFirst && <button onClick={prev}>Back</button>}
+          {!isLast ? (
+            <button onClick={next}>Next</button>
+          ) : (
+            <button onClick={close}>Finish</button>
           )}
-        </ModalContent>
+        </div>
       </Dialog>
     </>
   );
@@ -107,11 +100,21 @@ function MyModal() {
 You can create complex flows where the next step depends on user input:
 
 ```tsx
-import { useModal, ModalContent, Step, StepRenderer } from 'modal-manager';
+import { useModal, Step, StepRenderer } from 'modal-manager';
 import { Dialog } from 'your-ui-library';
 
 function PaymentModal() {
-  const { isOpen, open, close, goTo, setData, data, addStep } = useModal({
+  const { 
+    isOpen, 
+    open, 
+    close, 
+    goTo, 
+    setData, 
+    data, 
+    addStep, 
+    currentStep, 
+    prev 
+  } = useModal({
     id: 'payment-modal',
     steps: [
       { id: 'method' },
@@ -145,38 +148,34 @@ function PaymentModal() {
       <button onClick={open}>Make Payment</button>
       
       <Dialog open={isOpen} onClose={close}>
-        <ModalContent id="payment-modal">
-          {({ currentStep, prev, close }) => (
-            <StepRenderer currentStep={currentStep}>
-              <Step id="method">
-                <h2>Select Payment Method</h2>
-                <button onClick={() => handlePaymentMethodSelect('card')}>Credit Card</button>
-                <button onClick={() => handlePaymentMethodSelect('bank')}>Bank Transfer</button>
-              </Step>
-              
-              <Step id="card-details">
-                <h2>Enter Card Details</h2>
-                {/* Card form */}
-                <button onClick={() => prev()}>Back</button>
-                <button onClick={() => goTo('confirm')}>Continue</button>
-              </Step>
-              
-              <Step id="bank-details">
-                <h2>Enter Bank Details</h2>
-                {/* Bank form */}
-                <button onClick={() => prev()}>Back</button>
-                <button onClick={() => goTo('confirm')}>Continue</button>
-              </Step>
-              
-              <Step id="confirm">
-                <h2>Confirm Payment</h2>
-                <p>Payment Method: {data.paymentMethod}</p>
-                <button onClick={() => prev()}>Back</button>
-                <button onClick={close}>Confirm</button>
-              </Step>
-            </StepRenderer>
-          )}
-        </ModalContent>
+        <StepRenderer currentStep={currentStep}>
+          <Step id="method">
+            <h2>Select Payment Method</h2>
+            <button onClick={() => handlePaymentMethodSelect('card')}>Credit Card</button>
+            <button onClick={() => handlePaymentMethodSelect('bank')}>Bank Transfer</button>
+          </Step>
+          
+          <Step id="card-details">
+            <h2>Enter Card Details</h2>
+            {/* Card form */}
+            <button onClick={() => prev()}>Back</button>
+            <button onClick={() => goTo('confirm')}>Continue</button>
+          </Step>
+          
+          <Step id="bank-details">
+            <h2>Enter Bank Details</h2>
+            {/* Bank form */}
+            <button onClick={() => prev()}>Back</button>
+            <button onClick={() => goTo('confirm')}>Continue</button>
+          </Step>
+          
+          <Step id="confirm">
+            <h2>Confirm Payment</h2>
+            <p>Payment Method: {data.paymentMethod}</p>
+            <button onClick={() => prev()}>Back</button>
+            <button onClick={close}>Confirm</button>
+          </Step>
+        </StepRenderer>
       </Dialog>
     </>
   );
@@ -200,11 +199,11 @@ This ensures users always return to the step they came from, even in non-linear 
 #### Material UI
 
 ```tsx
-import { useModal, ModalContent } from 'modal-manager';
+import { useModal } from 'modal-manager';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material';
 
 function MaterialUIModal() {
-  const { isOpen, open, close } = useModal({
+  const { isOpen, open, close, currentStep, next, prev, isFirst, isLast } = useModal({
     id: 'mui-modal',
     steps: [{ id: 'step1' }, { id: 'step2' }]
   });
@@ -214,32 +213,26 @@ function MaterialUIModal() {
       <Button onClick={open}>Open Modal</Button>
       
       <Dialog open={isOpen} onClose={close}>
-        <ModalContent id="mui-modal">
-          {({ currentStep, next, prev, isFirst, isLast }) => (
-            <>
-              <DialogTitle>
-                {currentStep === 'step1' ? 'Step 1' : 'Step 2'}
-              </DialogTitle>
-              
-              <DialogContent>
-                {currentStep === 'step1' ? (
-                  <p>Content for step 1</p>
-                ) : (
-                  <p>Content for step 2</p>
-                )}
-              </DialogContent>
-              
-              <DialogActions>
-                {!isFirst && <Button onClick={prev}>Back</Button>}
-                {!isLast ? (
-                  <Button onClick={next}>Next</Button>
-                ) : (
-                  <Button onClick={close}>Finish</Button>
-                )}
-              </DialogActions>
-            </>
+        <DialogTitle>
+          {currentStep === 'step1' ? 'Step 1' : 'Step 2'}
+        </DialogTitle>
+        
+        <DialogContent>
+          {currentStep === 'step1' ? (
+            <p>Content for step 1</p>
+          ) : (
+            <p>Content for step 2</p>
           )}
-        </ModalContent>
+        </DialogContent>
+        
+        <DialogActions>
+          {!isFirst && <Button onClick={prev}>Back</Button>}
+          {!isLast ? (
+            <Button onClick={next}>Next</Button>
+          ) : (
+            <Button onClick={close}>Finish</Button>
+          )}
+        </DialogActions>
       </Dialog>
     </>
   );
@@ -249,7 +242,7 @@ function MaterialUIModal() {
 #### Shadcn/UI
 
 ```tsx
-import { useModal, ModalContent } from 'modal-manager';
+import { useModal } from 'modal-manager';
 import {
   Dialog,
   DialogContent,
@@ -260,7 +253,7 @@ import {
 } from '@/components/ui';
 
 function ShadcnModal() {
-  const { isOpen, open, close } = useModal({
+  const { isOpen, open, close, currentStep, next, prev, isFirst, isLast } = useModal({
     id: 'shadcn-modal',
     steps: [{ id: 'step1' }, { id: 'step2' }]
   });
@@ -271,32 +264,26 @@ function ShadcnModal() {
       
       <Dialog open={isOpen} onOpenChange={open => !open && close()}>
         <DialogContent>
-          <ModalContent id="shadcn-modal">
-            {({ currentStep, next, prev, isFirst, isLast }) => (
-              <>
-                <DialogHeader>
-                  <DialogTitle>
-                    {currentStep === 'step1' ? 'Step 1' : 'Step 2'}
-                  </DialogTitle>
-                </DialogHeader>
-                
-                {currentStep === 'step1' ? (
-                  <p>Content for step 1</p>
-                ) : (
-                  <p>Content for step 2</p>
-                )}
-                
-                <DialogFooter>
-                  {!isFirst && <Button variant="outline" onClick={prev}>Back</Button>}
-                  {!isLast ? (
-                    <Button onClick={next}>Next</Button>
-                  ) : (
-                    <Button onClick={close}>Finish</Button>
-                  )}
-                </DialogFooter>
-              </>
+          <DialogHeader>
+            <DialogTitle>
+              {currentStep === 'step1' ? 'Step 1' : 'Step 2'}
+            </DialogTitle>
+          </DialogHeader>
+          
+          {currentStep === 'step1' ? (
+            <p>Content for step 1</p>
+          ) : (
+            <p>Content for step 2</p>
+          )}
+          
+          <DialogFooter>
+            {!isFirst && <Button variant="outline" onClick={prev}>Back</Button>}
+            {!isLast ? (
+              <Button onClick={next}>Next</Button>
+            ) : (
+              <Button onClick={close}>Finish</Button>
             )}
-          </ModalContent>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </>
@@ -359,26 +346,6 @@ const {
   initialData,  // object - Initial data for the modal (optional)
   steps,        // array - Array of step objects (optional)
 });
-```
-
-### ModalContent
-
-```tsx
-<ModalContent id="modal-id">
-  {({
-    currentStep,  // string | null - ID of the current step
-    data,         // Record<string, unknown> - Current modal data
-    next,         // (data?) => void - Goes to the next step with optional data
-    prev,         // () => void - Goes to the previous step
-    close,        // () => void - Closes the modal
-    goTo,         // (stepId, data?) => void - Goes to a specific step with optional data
-    setData,      // (data) => void - Updates the modal data
-    isFirst,      // boolean - Whether the current step is the first step
-    isLast,       // boolean - Whether the current step is the last step
-  }) => (
-    // Your modal content
-  )}
-</ModalContent>
 ```
 
 ### StepRenderer and Step

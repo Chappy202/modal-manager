@@ -1,14 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import useModalStore from '../core/store';
-import type { ModalStep } from '../core/store';
+import type { UseModalOptions, UseModalReturn } from '../types/hooks';
 
-export type UseModalOptions = {
-  id: string;
-  initialData?: Record<string, unknown>;
-  steps?: ModalStep[];
-};
+export { type UseModalOptions } from '../types/hooks';
 
-export function useModal({ id, initialData = {}, steps = [] }: UseModalOptions) {
+export function useModal({ id, initialData = {}, steps = [] }: UseModalOptions): UseModalReturn {
   const {
     openModal,
     closeModal,
@@ -26,7 +22,14 @@ export function useModal({ id, initialData = {}, steps = [] }: UseModalOptions) 
     isModalOpen,
   } = useModalStore();
 
-  // Local state to track changes - rename to _ since we only use setState
+  // Local state to track changes
+  const [localIsOpen, setLocalIsOpen] = useState(false);
+  const [localCurrentStep, setLocalCurrentStep] = useState<string | null>(null);
+  const [localCurrentStepIndex, setLocalCurrentStepIndex] = useState(0);
+  const [localTotalSteps, setLocalTotalSteps] = useState(0);
+  const [localIsFirst, setLocalIsFirst] = useState(true);
+  const [localIsLast, setLocalIsLast] = useState(false);
+  const [localData, setLocalData] = useState<Record<string, unknown>>({});
   const [_, setForceUpdate] = useState({});
 
   // Initialize steps when the hook is first used
@@ -38,25 +41,52 @@ export function useModal({ id, initialData = {}, steps = [] }: UseModalOptions) 
 
   // Subscribe to store changes
   useEffect(() => {
+    // Initial state sync
+    setLocalIsOpen(isModalOpen(id));
+    setLocalCurrentStep(getCurrentStep(id));
+    setLocalCurrentStepIndex(getCurrentStepIndex(id));
+    setLocalTotalSteps(getTotalSteps(id));
+    setLocalIsFirst(isFirstStep(id));
+    setLocalIsLast(isLastStep(id));
+    setLocalData(getModalData(id));
+
+    // Subscribe to changes in the modal store
     const unsubscribe = useModalStore.subscribe(state => {
       // Force update when our modal changes
       if (state.modals[id] !== undefined) {
+        setLocalIsOpen(true);
+        setLocalCurrentStep(getCurrentStep(id));
+        setLocalCurrentStepIndex(getCurrentStepIndex(id));
+        setLocalTotalSteps(getTotalSteps(id));
+        setLocalIsFirst(isFirstStep(id));
+        setLocalIsLast(isLastStep(id));
+        setLocalData(getModalData(id));
         setForceUpdate({});
+      } else {
+        setLocalIsOpen(false);
       }
     });
 
     return () => {
       unsubscribe();
     };
-  }, [id]);
+  }, [
+    id,
+    isModalOpen,
+    getCurrentStep,
+    getCurrentStepIndex,
+    getTotalSteps,
+    isFirstStep,
+    isLastStep,
+    getModalData
+  ]);
 
   // Open the modal and initialize steps
   const open = useCallback(
     (data?: Record<string, unknown>) => {
       openModal(id, { ...initialData, ...data });
       initializeSteps();
-      // Force immediate update
-      setForceUpdate({});
+      setLocalIsOpen(true);
     },
     [id, initialData, openModal, initializeSteps],
   );
@@ -64,15 +94,13 @@ export function useModal({ id, initialData = {}, steps = [] }: UseModalOptions) 
   // Close the modal
   const close = useCallback(() => {
     closeModal(id);
-    // Force immediate update
-    setForceUpdate({});
+    setLocalIsOpen(false);
   }, [id, closeModal]);
 
   // Add or update a step
   const addStep = useCallback(
     (modalId: string, stepId: string, data?: Record<string, unknown>, previousStep?: string) => {
       storeAddStep(modalId, stepId, data, previousStep);
-      // Force immediate update
       setForceUpdate({});
     },
     [storeAddStep],
@@ -82,7 +110,6 @@ export function useModal({ id, initialData = {}, steps = [] }: UseModalOptions) 
   const next = useCallback(
     (data?: Record<string, unknown>) => {
       nextStep(id, data);
-      // Force immediate update
       setForceUpdate({});
     },
     [id, nextStep],
@@ -91,7 +118,6 @@ export function useModal({ id, initialData = {}, steps = [] }: UseModalOptions) 
   // Go to previous step
   const prev = useCallback(() => {
     prevStep(id);
-    // Force immediate update
     setForceUpdate({});
   }, [id, prevStep]);
 
@@ -99,7 +125,6 @@ export function useModal({ id, initialData = {}, steps = [] }: UseModalOptions) 
   const goTo = useCallback(
     (stepId: string, data?: Record<string, unknown>) => {
       goToStep(id, stepId, data);
-      // Force immediate update
       setForceUpdate({});
     },
     [id, goToStep],
@@ -109,20 +134,11 @@ export function useModal({ id, initialData = {}, steps = [] }: UseModalOptions) 
   const setData = useCallback(
     (data: Record<string, unknown>) => {
       updateData(id, data);
-      // Force immediate update
+      setLocalData(prev => ({ ...prev, ...data }));
       setForceUpdate({});
     },
     [id, updateData],
   );
-
-  // Get current modal state - remove forceUpdate from dependency arrays
-  const isOpen = useMemo(() => isModalOpen(id), [id, isModalOpen]);
-  const currentStep = useMemo(() => getCurrentStep(id), [id, getCurrentStep]);
-  const currentStepIndex = useMemo(() => getCurrentStepIndex(id), [id, getCurrentStepIndex]);
-  const totalSteps = useMemo(() => getTotalSteps(id), [id, getTotalSteps]);
-  const isFirst = useMemo(() => isFirstStep(id), [id, isFirstStep]);
-  const isLast = useMemo(() => isLastStep(id), [id, isLastStep]);
-  const data = useMemo(() => getModalData(id), [id, getModalData]);
 
   return {
     // Actions
@@ -135,12 +151,12 @@ export function useModal({ id, initialData = {}, steps = [] }: UseModalOptions) 
     addStep,
 
     // State
-    isOpen,
-    currentStep,
-    currentStepIndex,
-    totalSteps,
-    isFirst,
-    isLast,
-    data,
+    isOpen: localIsOpen,
+    currentStep: localCurrentStep,
+    currentStepIndex: localCurrentStepIndex,
+    totalSteps: localTotalSteps,
+    isFirst: localIsFirst,
+    isLast: localIsLast,
+    data: localData,
   };
 }

@@ -1,14 +1,7 @@
 import React from 'react';
+import type { StepProps, StepRendererProps } from '../types/components';
 
-export type StepProps = {
-  id: string;
-  children: React.ReactNode;
-};
-
-export type StepRendererProps = {
-  currentStep: string | null;
-  children: React.ReactElement<StepProps> | React.ReactElement<StepProps>[];
-};
+export { type StepProps, type StepRendererProps } from '../types/components';
 
 export function Step({ children }: StepProps) {
   return <>{children}</>;

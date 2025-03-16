@@ -1,39 +1,20 @@
 import React from 'react';
 import { useModal } from '../hooks/useModal';
+import type { ModalContentProps } from '../types/components';
 
-export type ModalContentProps = {
-  id: string;
-  children:
-    | React.ReactNode
-    | ((props: {
-        currentStep: string | null;
-        data: Record<string, unknown>;
-        next: (data?: Record<string, unknown>) => void;
-        prev: () => void;
-        close: () => void;
-        goTo: (stepId: string, data?: Record<string, unknown>) => void;
-        setData: (data: Record<string, unknown>) => void;
-        isFirst: boolean;
-        isLast: boolean;
-      }) => React.ReactNode);
-};
+export { type ModalContentProps } from '../types/components';
 
 export function ModalContent({ id, children }: ModalContentProps) {
-  const { currentStep, data, next, prev, close, goTo, setData, isFirst, isLast } = useModal({ id });
+  // Get all props from useModal
+  const {
+    open,
+    addStep,
+    ...modalProps
+  } = useModal({ id });
 
   // If children is a function, call it with the current state
   if (typeof children === 'function') {
-    return children({
-      currentStep,
-      data,
-      next,
-      prev,
-      close,
-      goTo,
-      setData,
-      isFirst,
-      isLast,
-    });
+    return children(modalProps);
   }
 
   // Otherwise, just render the children
