@@ -1,5 +1,5 @@
 {
-  "name": "modal-manager",
+  "name": "@tipthing/modal-manager",
   "version": "0.1.3",
   "description": "A flexible state management library for multi-step dialogs and modals in React applications",
   "main": "dist/lib/index.js",
