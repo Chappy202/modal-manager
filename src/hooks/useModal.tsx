@@ -78,7 +78,7 @@ export function useModal({ id, initialData = {}, steps = [] }: UseModalOptions):
     getTotalSteps,
     isFirstStep,
     isLastStep,
-    getModalData
+    getModalData,
   ]);
 
   // Open the modal and initialize steps

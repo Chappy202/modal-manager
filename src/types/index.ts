@@ -9,5 +9,5 @@ export type {
   ModalContentProps,
   StepProps,
   StepRendererProps,
-  ModalDebuggerProps
+  ModalDebuggerProps,
 } from './components';
