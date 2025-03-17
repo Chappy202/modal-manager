@@ -1,3 +1,6 @@
+[![npm version](https://badge.fury.io/js/angular2-expandable-list.svg)]([https://badge.fury.io/js/angular2-expandable-list](https://www.npmjs.com/package/@tipthing/modal-manager))
+[![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
+
 # Stepped Modal
 
 A lightweight, flexible library for managing multi-step modals in React applications.
