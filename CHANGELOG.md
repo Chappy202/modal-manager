@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.2.3](https://github.com/Chappy202/modal-manager/compare/v0.2.2...v0.2.3) (2025-04-09)
+
+
+### 🔧 Chores
+
+* **deps-dev:** bump @eslint/js from 9.22.0 to 9.23.0 ([103e3d6](https://github.com/Chappy202/modal-manager/commit/103e3d62f1ac8cad8727e1aae1f7e3239418fdf9))
+* **deps-dev:** bump @typescript-eslint/eslint-plugin ([07bdf8b](https://github.com/Chappy202/modal-manager/commit/07bdf8b24d5a3f898b8b53c457c43eb424de2c0e))
+* **deps-dev:** bump @typescript-eslint/parser from 8.28.0 to 8.29.0 ([bea0c36](https://github.com/Chappy202/modal-manager/commit/bea0c36784c88779a9c44540ebe970c5277157f7))
+* **deps-dev:** bump eslint from 9.23.0 to 9.24.0 ([5595168](https://github.com/Chappy202/modal-manager/commit/55951682a996aaf3a9706decab0fa8c0df932e9f))
+* **deps-dev:** bump eslint-plugin-prettier from 5.2.3 to 5.2.5 ([398d3ea](https://github.com/Chappy202/modal-manager/commit/398d3eabb4b2c105624843e6203931cad6365e9c))
+* **deps-dev:** bump eslint-plugin-react from 7.37.4 to 7.37.5 ([5bd46a3](https://github.com/Chappy202/modal-manager/commit/5bd46a38cd3ea717712077f297394932e1c594e8))
+* **deps-dev:** bump react and @types/react ([e7dfb95](https://github.com/Chappy202/modal-manager/commit/e7dfb958769a34dee5a5a95b230e326a585d4dac))
+* **deps-dev:** bump typescript from 5.8.2 to 5.8.3 ([3a5f5a1](https://github.com/Chappy202/modal-manager/commit/3a5f5a1ed93260c25156efc448554e645f06397b))
+* **deps-dev:** bump typescript-eslint from 8.28.0 to 8.29.0 ([46b1742](https://github.com/Chappy202/modal-manager/commit/46b174250fc23045dc5c38c6695178d49b114881))
+* **deps-dev:** bump typescript-eslint from 8.29.0 to 8.29.1 ([8071eef](https://github.com/Chappy202/modal-manager/commit/8071eefe192791387b6fd219f184a09a30017641))
+
 ### [0.2.2](https://github.com/Chappy202/modal-manager/compare/v0.2.1...v0.2.2) (2025-03-25)
 
 
